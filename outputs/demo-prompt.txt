@@ -1,14 +1,1 @@
-Run the workshop's fixed model-routing demo now. From the project folder containing outputs/demo-runner/demo.ps1, run this command once:
-
-  powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1
-
-Use the Node and Playwright runtime bundled with Codex. If the launcher reports that it cannot find bundled Node, locate it with Codex workspace dependencies and pass its full path as -NodeExecutable. This is setup before launch. Do not install Node or npm. Do not pause for input, substitute another command that sends model requests, or retry a launched job.
-
-The launcher returns immediately with a process ID, run ID, and log paths. Keep those for status checks. Until the log or outputs/live-demo/background-started.json confirms the same run ID, say "launch unverified". Do not wait for the build before returning. Startup does not prove that a model responded.
-
-The runner checks the OpenCodeX catalog at http://127.0.0.1:10100/v1/models and sends only the shipped demo batch through /v1/responses on that local proxy. It keeps the existing offline backup, creates one from the bundled offline example if missing, and clears only previous generated live results before building.
-
-- MiniMax (minimax/MiniMax-M3) builds a new calculator from scratch. The runner saves it as outputs/live-demo/index.html and checks it in Edge with networking blocked. The result is in outputs/live-demo/live-check.json.
-- Claude Sonnet (anthropic/claude-sonnet-5-5) and Z.ai GLM (zai/glm-5.3) independently review the same fixed example, outputs/demo/index.html. Their findings do not cover the fresh build. They receive no chat context or new live output.
-
-When asked for status, use this run's logs and outputs. Report the fresh build and its browser check separately from the fixed-example reviews. Include actual model IDs and output paths. If the runner is stale, the proxy or a route fails, or browser verification is unavailable, report the exact error and point to outputs/backup/index.html. Do not ask for input or start another run.
+Run the live workshop calculator demo from scratch using the project skill $workshop-live-demo. Read AGENTS.md and .agents/skills/workshop-live-demo/SKILL.md from this project. Stay in the foreground, act as the GPT coordinator, and show what you accept or reject from both reviews before completing the revision and final offline check.

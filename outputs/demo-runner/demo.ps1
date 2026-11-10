@@ -1,7 +1,8 @@
 param(
-    [ValidateSet('Start', 'Preview', 'CheckBackup')]
-    [string]$Mode = 'Start',
-    [string]$NodeExecutable
+    [ValidateSet('Prepare', 'Revise', 'Preview', 'CheckBackup')]
+    [string]$Mode = 'Prepare',
+    [string]$NodeExecutable,
+    [guid]$RunId
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,7 +27,7 @@ if (Test-Path -LiteralPath $modules -PathType Container) {
 }
 
 if ($Mode -eq 'Preview') {
-    & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview background
+    & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview demo
     exit $LASTEXITCODE
 }
 if ($Mode -eq 'CheckBackup') {
@@ -34,26 +35,25 @@ if ($Mode -eq 'CheckBackup') {
     exit $LASTEXITCODE
 }
 
-# Preflight the shipped batch locally so an old runner is caught before spawning.
-$preview = & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview background
-if ($LASTEXITCODE) { throw 'Background preview failed. Check the runner above. No model request was sent.' }
+# Catch an old runner before starting any model requests.
+$preview = & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview demo
+if ($LASTEXITCODE) { throw 'Foreground route plan failed. Check the runner above. No model request was sent.' }
 $plan = ($preview -join "`n") | ConvertFrom-Json
-if (!$plan.batchSha256 -or $plan.requests.Count -ne 3) {
-    throw 'The installed runner is not the current demo runner. No model request was sent.'
+if ($plan.workflow -ne 'gpt-coordinated-feedback-v2') {
+    throw 'The installed runner does not support GPT-coordinated feedback. No model request was sent.'
 }
 
-$runId = [guid]::NewGuid().ToString()
-$logDir = $root
-foreach ($part in @('outputs', 'live-demo', 'launch-logs')) {
-    $logDir = Join-Path $logDir $part
-    if (!(Test-Path -LiteralPath $logDir)) { $null = New-Item -ItemType Directory -Path $logDir }
-    $entry = Get-Item -LiteralPath $logDir -Force
-    if (!$entry.PSIsContainer -or ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
-        throw 'Refusing to write launcher logs through a linked or invalid directory.'
+Push-Location -LiteralPath $root
+try {
+    $runner = Join-Path $PSScriptRoot 'run.mjs'
+    if ($Mode -eq 'Revise') {
+        if (!$RunId -or $RunId -eq [guid]::Empty) { throw 'Pass the run ID from review-ready.json.' }
+        & $NodeExecutable $runner revise "--run-id=$RunId"
+    } else {
+        & $NodeExecutable $runner prepare
     }
+    $exitCode = $LASTEXITCODE
+} finally {
+    Pop-Location
 }
-$stdout = Join-Path $logDir "$runId.stdout.log"
-$stderr = Join-Path $logDir "$runId.stderr.log"
-$process = Start-Process -FilePath $NodeExecutable -ArgumentList @('outputs/demo-runner/run.mjs', 'demo', "--run-id=$runId") `
-    -WorkingDirectory $root -RedirectStandardOutput $stdout -RedirectStandardError $stderr -WindowStyle Hidden -PassThru
-[pscustomobject]@{ processId = $process.Id; runId = $runId; stdout = $stdout; stderr = $stderr } | ConvertTo-Json -Compress
+exit $exitCode
