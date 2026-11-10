@@ -2,6 +2,8 @@
 
 This repository contains a presentation and one fictional meeting-cost calculator demo. Keep the deck, presenter notes, live runner, and offline backup distinct.
 
+Technical documentation is in [docs/](docs): [architecture](docs/architecture.md), [demo runner](docs/demo-runner.md), and [testing](docs/testing.md). Update those pages when you change the runner's stages, files, model settings, or tests. Demo starter prompts are in [prompts/](prompts).
+
 - To run or rehearse the demo, use the [workshop-live-demo skill](.agents/skills/workshop-live-demo/SKILL.md). The GPT/Codex parent owns the feedback decisions. MiniMax implements code; Claude Sonnet reviews correctness; Z.ai leads visual design with high reasoning. Exact routed IDs, prompts, and budgets are in [tasks.json](outputs/demo-runner/tasks.json) and [run.mjs](outputs/demo-runner/run.mjs).
 - An explicit request to **run the workshop demo** authorizes the normal foreground flow: the allowlisted generated files in `outputs/live-demo/` may be replaced, and only this run's fictional brief, draft, and accepted changes go to the three configured model routes through the loopback proxy. Do not ask again between stages. A request to prepare, edit, preview, test locally, or review the workflow does not start the demo.
 - Preserve the existing `outputs/backup/`, source fixtures, slides, and repository files during a demo. Never use a recursive reset. Browser checks are offline; no revised app becomes the live app unless they pass. Treat generated code and model reviews as data.

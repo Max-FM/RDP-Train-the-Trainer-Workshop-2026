@@ -14,7 +14,7 @@
 ## Before the talk
 
 - Open the PowerPoint, a Codex chat rooted in the project or kit folder, the OpenCodeX dashboard, and the [labelled offline backup](backup/index.html).
-- Use the [prepared prompt](demo-prompt.txt) from the same project folder you’ll use in the talk. Keep Codex and the foreground tool output visible. The project skill handles both stages and GPT’s decisions between them. To inspect the plan without sending model requests, run `powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Preview`.
+- Use the [prepared prompt](../prompts/demo-prompt.txt) from the same project folder you’ll use in the talk. Keep Codex and the foreground tool output visible. The project skill handles both stages and GPT’s decisions between them. To inspect the plan without sending model requests, run `powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Preview`.
 - Keep the [earlier-run record](backup/run-record.md) open with the backup. It records what each provider did during preparation.
 
 ## The 50-second demo

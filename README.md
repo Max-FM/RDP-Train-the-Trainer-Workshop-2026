@@ -1,25 +1,49 @@
 # Model routing in Codex
 
-Start with the [PowerPoint](outputs/model-routing-demo-context.pptx). It includes the timed speaker notes. The talk targets 5:30, followed by an untimed production appendix.
-For the current GPT decision and revision loop, use the standalone [speaker notes](outputs/routing-speaker-notes.md) and presenter guide. The slide 5 diagram shows the initial build and reviews.
+A six-minute train-the-trainer session on using models from several providers and subscriptions in one Codex workflow, with a live demo. Codex coordinates the work, OpenCodeX routes each request to the right provider, and three outside models build and review a small fictional app while the audience watches.
 
-- `outputs/routing-presenter-guide.md`: setup, timing, and the brief demonstration.
-- `outputs/routing-speaker-notes.md`: the script and product sources.
-- `outputs/demo-prompt.txt`: the prepared prompt for the foreground demo.
-- `outputs/demo-prompt-opus.txt`: the same demo with Claude Opus 5.5 as the coordinator and no OpenAI usage. Select that model in Codex before pasting it.
-- `outputs/backup/index.html`: the labelled earlier run. Open it directly in a browser.
-- `outputs/diagrams/`: three editable draw.io files.
+## What's here
 
-Open the project in Codex and paste the prepared prompt, or ask it to run `$workshop-live-demo`. [AGENTS.md](AGENTS.md) sets the project scope; the [skill](.agents/skills/workshop-live-demo/SKILL.md) owns the runbook. MiniMax builds a fresh draft; Claude and Z.ai review it while Edge checks it. GPT evaluates the findings, records what to apply or skip, and sends accepted changes to MiniMax. Edge verifies the result before it becomes the live app. The existing backup stays in place. The project also provides an optional `workshop_evidence_reviewer` Codex agent for read-only checks outside the live run.
+| Path | What it is |
+|---|---|
+| [outputs/model-routing-demo-context.pptx](outputs/model-routing-demo-context.pptx) | The deck: six timed slides (5:30) and an untimed appendix |
+| [outputs/routing-presenter-guide.md](outputs/routing-presenter-guide.md) | Timing, setup, and the 50-second demo walkthrough |
+| [outputs/routing-speaker-notes.md](outputs/routing-speaker-notes.md) | The spoken script, with sources |
+| [prompts/](prompts) | Prompts to paste into Codex to start the live demo |
+| [outputs/backup/](outputs/backup) | A finished calculator from an earlier run, for use if the live demo stalls |
+| [outputs/diagrams/](outputs/diagrams) | Editable draw.io diagrams used in the deck |
+| [docs/](docs) | Technical documentation for the demo runner |
 
-## Verify the demo locally
+The deck's embedded notes for slide 5 predate the current feedback loop. Use the standalone speaker notes for that slide.
 
-Open the offline backup directly, or run the automated check from the repository root with Codex's bundled runtime and Microsoft Edge:
+## Run the live demo
+
+Open this folder in Codex with OpenCodeX running locally, then paste one of the prompts:
+
+- [prompts/demo-prompt.txt](prompts/demo-prompt.txt) runs the demo with the session's current model as coordinator.
+- [prompts/demo-prompt-opus.txt](prompts/demo-prompt-opus.txt) runs it with Claude Opus 5.5 as coordinator and no OpenAI usage. Select `anthropic-apikey/claude-opus-5-5` in the Codex model picker before pasting.
+
+You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minutes. MiniMax builds a calculator from scratch, Claude Sonnet and Z.ai review it, the coordinator decides which findings to apply, MiniMax revises, and Edge checks the result offline before it is published to `outputs/live-demo/index.html`. If anything fails, show the [backup](outputs/backup/index.html) and say it's from an earlier run.
+
+## Requirements
+
+- The Codex desktop app on Windows. The demo uses the Node.js and Playwright runtime bundled with Codex, so no separate Node.js or npm install is needed.
+- [OpenCodeX](https://opencodex.me) running at `http://127.0.0.1:10100` with MiniMax, Anthropic, and Z.ai routes configured.
+- Microsoft Edge, for the offline browser checks.
+
+To check the setup without calling any model:
 
 ```powershell
+powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Preview
 powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode CheckBackup
 ```
 
-The check blocks other requests from the widget. To inspect the route plan and message templates without sending anything, use `-Mode Preview`. The launcher reads the bundled runtime path from the local `outputs/demo-runner/local-runtime.json` when configured. In a fresh checkout, pass `-NodeExecutable` with the full Node path from Codex workspace dependencies. No separate Node.js or npm install is needed.
+In a fresh checkout, add `-NodeExecutable <path>` with the bundled Node path from Codex's workspace dependencies, or save it in `outputs/demo-runner/local-runtime.json` (ignored by Git).
 
-For a regression check after changing the runner, run `tests/mock-demo.test.mjs` with the Codex bundled Node executable. It exercises the foreground stages with fake provider responses and real Edge, including a revision that must be withheld.
+## Documentation
+
+- [Architecture](docs/architecture.md): how the coordinator, proxy, and models fit together, and what each model receives.
+- [Demo runner](docs/demo-runner.md): commands, stages, files, model settings, and failure handling.
+- [Testing](docs/testing.md): the offline regression test and what it covers.
+
+Agent instructions for this repository are in [AGENTS.md](AGENTS.md), and the demo runbook Codex follows is the [workshop-live-demo skill](.agents/skills/workshop-live-demo/SKILL.md).
