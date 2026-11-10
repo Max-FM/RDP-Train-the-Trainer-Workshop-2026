@@ -1,5 +1,5 @@
 // Routed workers under a parent Codex session. No native subagent tools.
-// Preview is read-only and never contacts the proxy. Send requires an exact preview digest.
+// The demo runs a fixed batch. Manual build/reviews keep their exact-preview flow.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -12,6 +12,8 @@ const root = path.resolve(runnerDir, '../..');
 const liveDir = path.join(root, 'outputs/live-demo');
 const endpoint = 'http://127.0.0.1:10100/v1/responses';
 const spec = JSON.parse(await fs.readFile(path.join(runnerDir, 'tasks.json'), 'utf8'));
+// Binds the three demo requests to the shipped prompts, model IDs, and fixed review source.
+const demoBatchSha256 = 'a9a97c1ec769204de8b24b85af165a79885f3952436d04a8f6269c09955a6b48';
 const routes = {
   build: { model: 'minimax/MiniMax-M3', effort: 'low', cap: 6000, aliases: ['minimax/MiniMax-M3', 'MiniMax-M3'] },
   correctness: { model: 'anthropic/claude-sonnet-5-5', effort: 'high', cap: 4000, aliases: ['anthropic/claude-sonnet-5-5'] },
@@ -19,7 +21,7 @@ const routes = {
 };
 const allowedFiles = new Set(['index.html', 'build-trace.json', 'correctness-trace.json', 'frontend-trace.json', 'correctness.md', 'frontend.md', 'background-started.json', 'live-check.json']);
 const liveArtifacts = [...allowedFiles, 'live-desktop.png', 'live-mobile.png'];
-const runIdFlag = /^--run-id=([a-f0-9-]{36})$/;
+const runIdFlag = /^--run-id=([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})$/;
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 async function noLinks(target) {
@@ -135,6 +137,21 @@ function validateHtml(html) {
     throw Error('Generated source failed the conservative offline check. Ask the coordinator to inspect the trace; no retry was sent.');
   }
 }
+async function checkDemoRoutes(items) {
+  const catalog = new URL('/v1/models', endpoint);
+  const signal = AbortSignal.timeout(7000);
+  let response;
+  try { response = await fetch(catalog, { redirect: 'error', signal }); }
+  catch (error) {
+    const detail = signal.aborted ? 'timed out after 7 seconds' : error.cause?.message ?? error.message;
+    throw Error(`Proxy catalog request failed: ${detail}. No model request was sent.`, { cause: error });
+  }
+  if (!response.ok) throw Error(`Proxy catalog returned HTTP ${response.status}. No model request was sent.`);
+  const catalogData = await response.json();
+  const available = new Set(Array.isArray(catalogData.data) ? catalogData.data.map(entry => entry.id) : []);
+  const missing = items.map(item => item.request.model).filter(model => !available.has(model));
+  if (missing.length) throw Error(`Proxy catalog is missing ${missing.join(', ')}. No model request was sent.`);
+}
 async function sendOne(item) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 150000);
@@ -175,39 +192,43 @@ async function sendOne(item) {
 }
 
 try {
-  const [action = 'preview', stage = 'build', approval, runFlag, ...extra] = process.argv.slice(2);
+  const [action = 'preview', argument, approval, ...extra] = process.argv.slice(2);
+  const demo = action === 'demo';
+  const stage = demo ? 'background' : argument ?? 'build';
   const background = stage === 'background';
-  const suppliedRun = runFlag?.match(runIdFlag)?.[1];
-  if (!['preview', 'send'].includes(action) || !['build', 'reviews', 'background'].includes(stage) || extra.length ||
-      (action === 'preview' && (approval || runFlag)) ||
-      (action === 'send' && (!/^--approved-sha256=[a-f0-9]{64}$/.test(approval ?? '') ||
-        (background ? !suppliedRun : !!runFlag)))) {
-    throw Error('Use run.mjs preview background and the preview’s launch command after approval. For manual runs, use preview build|reviews or send build|reviews --approved-sha256=<digest>.');
+  const suppliedRun = demo ? argument?.match(runIdFlag)?.[1] : null;
+  const valid = demo ? (!argument || suppliedRun) && !approval :
+    action === 'preview' ? ['build', 'reviews', 'background'].includes(stage) && !approval :
+    action === 'send' && ['build', 'reviews'].includes(stage) && /^--approved-sha256=[a-f0-9]{64}$/.test(approval ?? '');
+  if (!valid || extra.length) {
+    throw Error('Use run.mjs demo [--run-id=<UUID>] to launch, or preview background to inspect the fixed batch. Manual: preview build|reviews or send build|reviews --approved-sha256=<digest>.');
   }
   validateSpec();
   const items = await plan(stage);
-  const runId = background ? (suppliedRun ?? crypto.randomUUID()) : null;
-  const digest = hash(JSON.stringify(background ? { runId, requests: items } : items));
+  const runId = demo ? (suppliedRun ?? crypto.randomUUID()) : null;
+  const digest = hash(JSON.stringify(items));
+  if (background && digest !== demoBatchSha256) throw Error('The fixed demo requests or example changed. No model request was sent. Restore the matching workshop files.');
   if (action === 'preview') {
     console.log(JSON.stringify({ kind: 'REQUEST PREVIEW ONLY — no provider contacted',
-      upstream: 'OpenCodex resolves each exact model route through its current configuration. Verify the provider destination in the dashboard before approval; this runner does not inspect or modify provider configuration.',
-      ...(background ? { runId, launch: `node outputs/demo-runner/run.mjs send background --approved-sha256=${digest} --run-id=${runId}`,
-        sequence: 'Preserve the existing backup (create it from the bundled offline example only if missing), clear prior live artifacts, build afresh, then verify locally and review the fixed example in parallel.' } : {}),
-      requests: items, approvalSha256: digest }, null, 2));
+      upstream: 'OpenCodeX resolves each exact model route through its current configuration. This runner does not modify provider configuration.',
+      ...(background ? { launch: 'node outputs/demo-runner/run.mjs demo', batchSha256: digest,
+        sequence: 'Preserve the backup, check the proxy catalog, clear prior live artifacts, build afresh, then verify locally and review the fixed example in parallel.' } : { approvalSha256: digest }),
+      requests: items }, null, 2));
   } else {
-    if (approval !== `--approved-sha256=${digest}`) throw Error('Approval digest does not match the exact current messages and source. Preview again and obtain fresh approval.');
+    if (!demo && approval !== `--approved-sha256=${digest}`) throw Error('Approval digest does not match the exact current messages and source. Preview again and obtain fresh approval.');
     const release = await lockLive();
     try {
       let work;
-      if (background) {
-        try { await writeLive(`used-${runId}.json`, JSON.stringify({ approvalSha256: digest }) + '\n'); }
+      if (demo) {
+        try { await writeLive(`used-${runId}.json`, JSON.stringify({ batchSha256: digest }) + '\n'); }
         catch (error) {
-          if (error.code === 'EEXIST') throw Error('This approved launch was already attempted. No request was sent.');
+          if (error.code === 'EEXIST') throw Error('This run ID was already attempted. No model request was sent.');
           throw error;
         }
         await ensureBackup();
+        await checkDemoRoutes(items);
         await resetLive();
-        await writeLive('background-started.json', JSON.stringify({ runId, approvalSha256: digest, startedAt: new Date().toISOString() }) + '\n');
+        await writeLive('background-started.json', JSON.stringify({ runId, batchSha256: digest, startedAt: new Date().toISOString() }) + '\n');
         console.log(`Background run ${runId} started.`);
         await sendOne(items[0]);
         work = [...items.slice(1).map(sendOne), checkLive()];

@@ -8,15 +8,14 @@ Start with the [PowerPoint](outputs/model-routing-demo-context.pptx). It include
 - `outputs/backup/index.html`: the labelled earlier run. Open it directly in a browser.
 - `outputs/diagrams/`: three editable draw.io files.
 
-Before presenting, run `node outputs/demo-runner/run.mjs preview background` and approve the three exact requests together. Keep that preview's one-use launch command. At the opening, launch once and return to the deck. The runner replaces the previous live build, preserves the existing backup (or creates it if missing), and checks the fresh MiniMax build in Edge. The two reviewers check the fixed example from the preview. To have them review the fresh build instead, use the separate build and review steps in the prompt.
+At the opening, paste the prepared prompt into Codex or run `powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1`. The launcher returns immediately. The runner checks the proxy routes, replaces the previous live build, preserves the existing backup (or creates it if missing), and checks the fresh MiniMax build in Edge. The two reviewers check the same fixed example. No input is needed after launch.
 
 ## Verify the demo locally
 
-Open the offline backup directly, or run the automated check from the repository root with Node.js and Microsoft Edge installed:
+Open the offline backup directly, or run the automated check from the repository root with Codex's bundled runtime and Microsoft Edge:
 
-```sh
-npm install --no-save --package-lock=false playwright
-node outputs/demo-runner/check.mjs outputs/backup/index.html
+```powershell
+powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode CheckBackup
 ```
 
-The check blocks network requests from the widget. To inspect the live build request without sending it, run `node outputs/demo-runner/run.mjs preview build`.
+The check blocks network requests from the widget. To inspect the exact demo batch without sending anything, use `-Mode Preview`. The launcher reads the bundled runtime path from the local `outputs/demo-runner/local-runtime.json` when configured. In a fresh checkout, pass `-NodeExecutable` with the full Node path from Codex workspace dependencies. No separate Node.js or npm install is needed.

@@ -1,28 +1,14 @@
-You are the coordinator for a background job through the local OpenCodeX proxy at http://127.0.0.1:10100/v1/responses. Run commands with Node.js from the project folder that contains outputs/demo-runner/run.mjs.
+Run the workshop's fixed model-routing demo now. From the project folder containing outputs/demo-runner/demo.ps1, run this command once:
 
-PREVIEW AND APPROVAL
-If the requester has not explicitly approved an exact batch and its launch command for this run, run:
-  node outputs/demo-runner/run.mjs preview background
-The preview is local and contacts no model or proxy. Usage output that only lists "build" and "reviews" means the runner is stale. Report the resolved runner path and the error. If the output is missing requests, approvalSha256, runId, or the launch command for any other reason, report an invalid preview and quote the relevant output. Stop on either error.
+  powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1
 
-Verify in OpenCodeX that each exact model ID in the preview routes to its listed provider (MiniMax, Anthropic, and Z.ai respectively). Stop and report any missing or mismatched route. Show the requester the complete preview, including the HTML and recipient IDs, and get explicit approval for that exact batch. Keep the launch command from that preview; a prompt paste or a digest alone does not grant approval.
+Use the Node and Playwright runtime bundled with Codex. If the launcher reports that it cannot find bundled Node, locate it with Codex workspace dependencies and pass its full path as -NodeExecutable. This is setup before launch. Do not install Node or npm. Do not pause for input, substitute another command that sends model requests, or retry a launched job.
 
-LAUNCH
-Start the approved command once as a background process and keep its handle for later status checks. The runner checks the digest against the exact current requests and approved run ID before changing live files or sending requests. Do not compare it with a newly generated preview, which would have a new run ID. If the runner rejects the digest, stop. Report the mismatch and show a fresh full preview for separate approval; do not launch it automatically.
+The launcher returns immediately with a process ID, run ID, and log paths. Keep those for status checks. Until the log or outputs/live-demo/background-started.json confirms the same run ID, say "launch unverified". Do not wait for the build before returning. Startup does not prove that a model responded.
 
-Return without waiting for the build. Confirm the job started only when the runner logs "Background run <run ID> started." or writes outputs/live-demo/background-started.json with the approved run ID. Until then say "launch unverified" and give the process handle and any relevant output. If no handle is available, say so; do not launch again. Startup does not prove that any model responded.
+The runner checks the OpenCodeX catalog at http://127.0.0.1:10100/v1/models and sends only the shipped demo batch through /v1/responses on that local proxy. It keeps the existing offline backup, creates one from the bundled offline example if missing, and clears only previous generated live results before building.
 
-WHAT WILL RUN
-1. The runner preserves the existing offline backup. If outputs/backup/index.html is missing, it creates a labelled standalone backup from the bundled offline example. It removes only previous generated live artifacts, then MiniMax M3 (minimax/MiniMax-M3; low; 6000 output tokens) builds the calculator from scratch. The fresh result is saved to outputs/live-demo/index.html.
-2. Claude Sonnet (anthropic/claude-sonnet-5-5; high; 4000) and Z.ai GLM (zai/glm-5.3; low; 4000) review the same fixed example, outputs/demo/index.html, in parallel. They receive only the exact text and source shown in the approved preview. No freshly generated HTML, chat context, or review output is sent to them.
-3. The runner checks the fresh build in a local browser with networking blocked and writes the outcome to outputs/live-demo/live-check.json. It also writes the review notes and model traces under outputs/live-demo/. Each worker gets its own context. Do not try a second delivery path, retry, or substitute a model.
+- MiniMax (minimax/MiniMax-M3) builds a new calculator from scratch. The runner saves it as outputs/live-demo/index.html and checks it in Edge with networking blocked. The result is in outputs/live-demo/live-check.json.
+- Claude Sonnet (anthropic/claude-sonnet-5-5) and Z.ai GLM (zai/glm-5.3) independently review the same fixed example, outputs/demo/index.html. Their findings do not cover the fresh build. They receive no chat context or new live output.
 
-STATUS AND VERIFICATION
-When asked for status, use the saved process handle or this run's output files. Report:
-- Fresh build: outputs/live-demo/index.html, the actual response model if available, and the result in outputs/live-demo/live-check.json. Missing Playwright or Edge is a browser verification failure, not a build failure.
-- Fixed-example reviews: outputs/demo/index.html is what Claude and Z.ai reviewed. List their actual response models and note paths when available. Their findings do not cover the fresh build.
-- Failures: report the stage and exact error. Connection refusal, timeout, or an HTTP error during a request belongs to the proxy/request stage. If the evidence does not identify the cause, say so. Do not retry or substitute a route.
-If the live build is unavailable or unverified, report the offline backup path: outputs/backup/index.html.
-
-ALTERNATE MODE: REVIEW THE FRESH BUILD
-Use preview build / send build, then preview reviews / send reviews. In this mode the reviewers do receive the fresh build. Get separate approval for the exact review requests after the source exists.
+When asked for status, use this run's logs and outputs. Report the fresh build and its browser check separately from the fixed-example reviews. Include actual model IDs and output paths. If the runner is stale, the proxy or a route fails, or browser verification is unavailable, report the exact error and point to outputs/backup/index.html. Do not ask for input or start another run.
