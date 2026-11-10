@@ -31,7 +31,7 @@ if ($Mode -eq 'Preview') {
     exit $LASTEXITCODE
 }
 if ($Mode -eq 'CheckBackup') {
-    & $NodeExecutable (Join-Path $PSScriptRoot 'check.mjs') 'outputs/backup/index.html'
+    & $NodeExecutable (Join-Path $PSScriptRoot 'check.mjs') 'demo/backup/index.html'
     exit $LASTEXITCODE
 }
 
@@ -39,8 +39,8 @@ if ($Mode -eq 'CheckBackup') {
 $preview = & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview demo
 if ($LASTEXITCODE) { throw 'Foreground route plan failed. Check the runner above. No model request was sent.' }
 $plan = ($preview -join "`n") | ConvertFrom-Json
-if ($plan.workflow -ne 'gpt-coordinated-feedback-v2') {
-    throw 'The installed runner does not support GPT-coordinated feedback. No model request was sent.'
+if ($plan.workflow -ne 'coordinated-feedback-v3') {
+    throw 'The installed runner is out of date. No model request was sent.'
 }
 
 Push-Location -LiteralPath $root

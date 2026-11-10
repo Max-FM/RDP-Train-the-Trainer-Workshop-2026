@@ -9,14 +9,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rdp-workshop-test-'));
-const sourcePath = 'outputs/demo/index.html';
-const launcher = 'outputs/demo-runner/demo.ps1';
-for (const file of [sourcePath, launcher, 'outputs/demo-runner/run.mjs', 'outputs/demo-runner/tasks.json', 'outputs/demo-runner/check.mjs']) {
+const sourcePath = 'demo/reference/index.html';
+const launcher = 'demo/runner/demo.ps1';
+for (const file of [sourcePath, launcher, 'demo/runner/run.mjs', 'demo/runner/tasks.json', 'demo/runner/check.mjs']) {
   fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
   fs.copyFileSync(path.join(repo, file), path.join(root, file));
 }
-const live = path.join(root, 'outputs/live-demo');
-const backup = path.join(root, 'outputs/backup/index.html');
+const live = path.join(root, 'demo/live');
+const backup = path.join(root, 'demo/backup/index.html');
 fs.mkdirSync(live, { recursive: true });
 fs.mkdirSync(path.dirname(backup), { recursive: true });
 fs.writeFileSync(backup, fs.readFileSync(path.join(root, sourcePath)));
@@ -72,7 +72,7 @@ const decision = (source, finding, disposition = 'apply') => ({ source, finding,
 function prepare() {
   const result = run(['-Mode', 'Prepare']);
   assert.equal(result.status, 0, result.stdout + '\n' + result.stderr);
-  assert.match(result.stdout, /Ready for GPT coordinator/);
+  assert.match(result.stdout, /Ready for coordinator/);
   assert.equal(fs.existsSync(path.join(live, 'index.html')), false);
   assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'draft-check.json'), 'utf8')).assertionFailed, true);
   return JSON.parse(fs.readFileSync(path.join(live, 'review-ready.json'), 'utf8')).runId;
@@ -137,7 +137,7 @@ assert.equal(fs.existsSync(path.join(live, 'repaired.html')), true);
 assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'revised-check.json'), 'utf8')).passed, false);
 assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'live-check.json'), 'utf8')).passed, true);
 const liveSnapshot = fs.readFileSync(path.join(live, 'review-ready.json'), 'utf8');
-fs.writeFileSync(path.join(root, 'outputs/demo-runner/check.mjs'), "throw Error('Missing browser in preflight test');");
+fs.writeFileSync(path.join(root, 'demo/runner/check.mjs'), "throw Error('Missing browser in preflight test');");
 const before = count();
 const aborted = run(['-Mode', 'Prepare']);
 assert.equal(aborted.status, 1);
@@ -148,5 +148,5 @@ const stale = run(['-Mode', 'Revise', '-RunId', next]);
 assert.equal(stale.status, 1);
 assert.match(stale.stderr, /superseded this run/);
 assert.equal(count(), before);
-console.log('PASS: fresh build, exact draft reviews, GPT decisions, revision and Edge publication gate; backup preserved. Models mocked.');
+console.log('PASS: fresh build, exact draft reviews, coordinator decisions, revision and Edge publication gate; backup preserved. Models mocked.');
 console.log('Evidence retained in ' + root);

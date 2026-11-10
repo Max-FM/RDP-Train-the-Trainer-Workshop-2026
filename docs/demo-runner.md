@@ -1,6 +1,6 @@
 # Demo runner
 
-The runner lives in `outputs/demo-runner/`. Codex normally drives it through the [workshop-live-demo skill](../.agents/skills/workshop-live-demo/SKILL.md), but each stage can also be run by hand from the repository root.
+The runner lives in `demo/runner/`. Codex normally drives it through the [workshop-live-demo skill](../.agents/skills/workshop-live-demo/SKILL.md), but each stage can also be run by hand from the repository root.
 
 ## Files
 
@@ -16,16 +16,16 @@ The runner lives in `outputs/demo-runner/`. Codex normally drives it through the
 
 ```powershell
 # Show the route plan and prompt templates. Sends nothing.
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Preview
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Preview
 
 # Check the backup page offline. Sends nothing.
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode CheckBackup
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode CheckBackup
 
-# Stage 1: build and review. Prints "Ready for GPT coordinator: <run-id>".
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Prepare
+# Stage 1: build and review. Prints "Ready for coordinator: <run-id>".
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Prepare
 
-# Stage 2: after outputs/live-demo/coordination.json is written.
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Revise -RunId <run-id>
+# Stage 2: after demo/live/coordination.json is written.
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Revise -RunId <run-id>
 ```
 
 Add `-NodeExecutable <path>` if `local-runtime.json` isn't set up.
@@ -62,7 +62,7 @@ Reasoning tokens count against the output cap, so the high-effort reviewers get 
 
 ## Run files
 
-All files are written to `outputs/live-demo/`, which is ignored by Git.
+All files are written to `demo/live/`, which is ignored by Git.
 
 | File | Written by | Contents |
 |---|---|---|
@@ -85,5 +85,5 @@ All files are written to `outputs/live-demo/`, which is ignored by Git.
 | `Proxy catalog is missing ...` | OpenCodeX isn't running or lacks a route. No model was called. |
 | `A newer Prepare attempt superseded this run` | Revise was given an old run ID. Start a new run. |
 | `This run already attempted its revision stage` | Each run revises once. Start a new run. |
-| `A job is already active or its lock needs inspection` | `outputs/live-demo/.runner.lock` exists. Remove it only after confirming no runner process is active. |
+| `A job is already active or its lock needs inspection` | `demo/live/.runner.lock` exists. Remove it only after confirming no runner process is active. |
 | `Revised app did not pass Edge` | The revision and its one repair both failed. Use the backup. |

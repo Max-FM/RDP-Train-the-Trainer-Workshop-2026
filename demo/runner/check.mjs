@@ -1,14 +1,11 @@
-// Local browser check for the live result. Reads one HTML file; blocks every non-file request.
-// Writes screenshots only when the checked file is inside outputs/live-demo/.
+// Offline Edge check of one calculator HTML file. Blocks every request except the file itself.
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const file = path.resolve(root, process.argv[2] ?? 'outputs/live-demo/index.html');
-const liveDir = path.join(root, 'outputs/live-demo');
-const shots = path.dirname(file) === liveDir && (path.basename(file) === 'index.html' || process.argv.includes('--screenshots'));
+const file = path.resolve(root, process.argv[2] ?? 'demo/live/index.html');
 const require = createRequire(import.meta.url);
 let playwrightPath;
 try { playwrightPath = require.resolve('playwright'); }
@@ -55,10 +52,8 @@ try {
   }
   await page.getByRole('button', { name: /reset/i }).click();
   assert.match(await text(), /\$300\.00/, 'CHECK: Reset must restore the defaults and $300.00.');
-  if (shots) await page.screenshot({ path: path.join(liveDir, 'live-desktop.png'), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'CHECK: The app must fit a 390px viewport without horizontal scrolling.');
-  if (shots) await page.screenshot({ path: path.join(liveDir, 'live-mobile.png'), fullPage: true });
   assert.equal(blocked.length, 0, 'CHECK: The app attempted external requests and must work offline.');
   console.log('Behavior checks passed: no Calculate, Reset, defaults 300.00, 600.00 auto-update, zero duration, fractional/blank/negative rejection, stale totals cleared, visible validation, 390px fit, zero external requests. Nonfinite and overflow edge cases require separate checks.');
 } finally { await browser.close(); }

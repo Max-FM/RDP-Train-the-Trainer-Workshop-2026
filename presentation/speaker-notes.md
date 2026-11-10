@@ -44,9 +44,9 @@ Once I can assign models by job, I can also make better use of the plans I alrea
 
 ## 3:55–4:45 — Demo: one build, two reviews
 
-**Action:** Point to the build and review branches, then briefly show Providers or Logs in OpenCodeX. Show which routes ran and where the findings came back. Use the labelled earlier run if needed. Return to the deck by 4:45.
+**Action:** Show the draft, both reviews, the coordinator’s decisions, MiniMax’s changes and the final Edge check. Briefly show Providers or Logs in OpenCodeX. If the run is still going, open the backup. Return to the deck by 4:45.
 
-Here’s that delegation pattern. MiniMax builds from a short brief. Claude checks the logic and Z.ai reviews the interface of that same draft. GPT decides which findings apply and sends those changes to MiniMax. Here’s what changed, and here’s the check on the revised app. If the run is still going, I’ll show the calculator from an earlier run.
+Here’s that delegation pattern. MiniMax builds from a short brief. Claude checks the logic and Z.ai suggests visual improvements to that same draft. Codex decides which findings apply and sends those changes back to MiniMax. Here’s what changed, and here’s the check on the revised app. If the run is still going, I’ll show the calculator from an earlier run.
 
 - https://opencodex.me/guides/web-dashboard/
 - https://opencodex.me/guides/sub-agent-surface/
@@ -72,4 +72,4 @@ So, can those models work together without splitting the project? Yes. Keep the 
 
 Use only if asked. The architecture diagram records the workflow used to prepare the lesson and demo. The Z.ai slide review applies to the previous version.
 
-Spoken script: 563 words, plus demo actions and pauses.
+Spoken script: 556 words, plus demo actions and pauses.

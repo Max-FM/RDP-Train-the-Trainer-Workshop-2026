@@ -6,15 +6,13 @@ A six-minute train-the-trainer session on using models from several providers an
 
 | Path | What it is |
 |---|---|
-| [outputs/model-routing-demo-context.pptx](outputs/model-routing-demo-context.pptx) | The deck: six timed slides (5:30) and an untimed appendix |
-| [outputs/routing-presenter-guide.md](outputs/routing-presenter-guide.md) | Timing, setup, and the 50-second demo walkthrough |
-| [outputs/routing-speaker-notes.md](outputs/routing-speaker-notes.md) | The spoken script, with sources |
+| [presentation/model-routing.pptx](presentation/model-routing.pptx) | The deck: six timed slides (5:30) and an untimed appendix |
+| [presentation/presenter-guide.md](presentation/presenter-guide.md) | Timing, setup, and the 50-second demo walkthrough |
+| [presentation/speaker-notes.md](presentation/speaker-notes.md) | The spoken script, with sources |
 | [prompts/](prompts) | Prompts to paste into Codex to start the live demo |
-| [outputs/backup/](outputs/backup) | A finished calculator from an earlier run, for use if the live demo stalls |
-| [outputs/diagrams/](outputs/diagrams) | Editable draw.io diagrams used in the deck |
+| [demo/backup/](demo/backup) | A finished calculator from an earlier run, for use if the live demo stalls |
+| [presentation/diagrams/](presentation/diagrams) | Editable draw.io diagrams used in the deck |
 | [docs/](docs) | Technical documentation for the demo runner |
-
-The deck's embedded notes for slide 5 predate the current feedback loop. Use the standalone speaker notes for that slide.
 
 ## Run the live demo
 
@@ -23,7 +21,7 @@ Open this folder in Codex with OpenCodeX running locally, then paste one of the 
 - [prompts/demo-prompt.txt](prompts/demo-prompt.txt) runs the demo with the session's current model as coordinator.
 - [prompts/demo-prompt-opus.txt](prompts/demo-prompt-opus.txt) runs it with Claude Opus 5.5 as coordinator and no OpenAI usage. Select `anthropic-apikey/claude-opus-5-5` in the Codex model picker before pasting.
 
-You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minutes. MiniMax builds a calculator from scratch, Claude Sonnet and Z.ai review it, the coordinator decides which findings to apply, MiniMax revises, and Edge checks the result offline before it is published to `outputs/live-demo/index.html`. If anything fails, show the [backup](outputs/backup/index.html) and say it's from an earlier run.
+You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minutes. MiniMax builds a calculator from scratch, Claude Sonnet and Z.ai review it, the coordinator decides which findings to apply, MiniMax revises, and Edge checks the result offline before it is published to `demo/live/index.html`. If anything fails, show the [backup](demo/backup/index.html) and say it's from an earlier run.
 
 ## Requirements
 
@@ -34,11 +32,11 @@ You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minu
 To check the setup without calling any model:
 
 ```powershell
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode Preview
-powershell.exe -NoProfile -NonInteractive -File outputs/demo-runner/demo.ps1 -Mode CheckBackup
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Preview
+powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode CheckBackup
 ```
 
-In a fresh checkout, add `-NodeExecutable <path>` with the bundled Node path from Codex's workspace dependencies, or save it in `outputs/demo-runner/local-runtime.json` (ignored by Git).
+In a fresh checkout, add `-NodeExecutable <path>` with the bundled Node path from Codex's workspace dependencies, or save it in `demo/runner/local-runtime.json` (ignored by Git).
 
 ## Documentation
 

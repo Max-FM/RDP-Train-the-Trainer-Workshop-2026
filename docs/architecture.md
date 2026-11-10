@@ -4,13 +4,13 @@ The demo shows one Codex session coordinating three models from three providers.
 
 ```mermaid
 flowchart LR
-    C[Codex coordinator] -->|runs| R[Demo runner<br/>outputs/demo-runner]
+    C[Codex coordinator] -->|runs| R[Demo runner<br/>demo/runner]
     R -->|/v1/responses| P[OpenCodeX proxy<br/>127.0.0.1:10100]
     P --> M[MiniMax M3<br/>build and revise]
     P --> S[Claude Sonnet 5.5<br/>correctness review]
     P --> Z[Z.ai GLM 5.3<br/>visual design review]
     R -->|offline| E[Edge via bundled Playwright]
-    C -->|reads reviews, writes decisions| F[(outputs/live-demo)]
+    C -->|reads reviews, writes decisions| F[(demo/live)]
     R --> F
 ```
 
@@ -20,7 +20,7 @@ flowchart LR
 |---|---|
 | Codex coordinator | The model running the Codex session. It starts each runner stage, reads the draft and reviews, and decides which findings to apply. It can be a GPT model or Claude Opus through OpenCodeX. |
 | OpenCodeX | A local proxy that receives OpenAI-style requests and forwards each one to the provider for the requested model ID, using that provider's subscription or API key. |
-| Demo runner | `outputs/demo-runner/run.mjs`, started through `demo.ps1`. It sends the model requests, validates replies, runs the browser checks, and writes all run files. |
+| Demo runner | `demo/runner/run.mjs`, started through `demo.ps1`. It sends the model requests, validates replies, runs the browser checks, and writes all run files. |
 | MiniMax M3 | Builds the calculator from a short brief, then implements the coordinator's accepted changes. Low reasoning effort. |
 | Claude Sonnet 5.5 | Reviews the draft's logic, validation, and rounding. High reasoning effort. |
 | Z.ai GLM 5.3 | Proposes up to three concrete visual changes, using the backup's design as the reference. High reasoning effort. It reviews source code and never sees a rendering. |
@@ -34,6 +34,6 @@ The routed workers are direct requests through the proxy. They don't appear as n
 
 ## Safety boundaries
 
-- A demo run replaces only an allowlisted set of generated files in `outputs/live-demo/`. It never touches `outputs/backup/`, source fixtures, or the slides.
+- A demo run replaces only an allowlisted set of generated files in `demo/live/`. It never touches `demo/backup/`, source fixtures, or the slides.
 - A revised app becomes `index.html` only after it passes the offline browser check.
 - Sharing the repository, changing providers or credentials, deleting files outside the allowlist, and pushing require separate approval. See [AGENTS.md](../AGENTS.md).

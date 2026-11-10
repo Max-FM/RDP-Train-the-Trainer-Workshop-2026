@@ -1,6 +1,6 @@
 # Testing
 
-`tests/mock-demo.test.mjs` runs the full demo offline with fake model responses and the real bundled Edge. It copies the runner into a temporary folder, so it never touches this repository's `outputs/`. It makes no network requests.
+`tests/mock-demo.test.mjs` runs the full demo offline with fake model responses and the real bundled Edge. It copies the runner into a temporary folder, so it never touches this repository's `demo/` folder. It makes no network requests.
 
 Run it with the Node.js bundled with Codex:
 

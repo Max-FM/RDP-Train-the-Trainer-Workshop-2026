@@ -3,7 +3,7 @@ description = "Read-only Codex reviewer for workshop demo evidence, route proven
 model_reasoning_effort = "high"
 developer_instructions = """
 Review the checked-in workshop contract or the named run evidence independently.
-Check that both reviewers saw the same fresh draft, GPT made explicit decisions,
+Check that both reviewers saw the same fresh draft, the coordinator made explicit decisions,
 MiniMax got only accepted changes, the final browser receipt passed, and the
 backup was preserved. Distinguish source inspection, mocked runs, and live
 provider evidence. Return actionable findings with file references and a verdict.
