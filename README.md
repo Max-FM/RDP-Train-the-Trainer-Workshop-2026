@@ -6,6 +6,7 @@ For the current GPT decision and revision loop, use the standalone [speaker note
 - `outputs/routing-presenter-guide.md`: setup, timing, and the brief demonstration.
 - `outputs/routing-speaker-notes.md`: the script and product sources.
 - `outputs/demo-prompt.txt`: the prepared prompt for the foreground demo.
+- `outputs/demo-prompt-opus.txt`: the same demo with Claude Opus 5.5 as the coordinator and no OpenAI usage. Select that model in Codex before pasting it.
 - `outputs/backup/index.html`: the labelled earlier run. Open it directly in a browser.
 - `outputs/diagrams/`: three editable draw.io files.
 

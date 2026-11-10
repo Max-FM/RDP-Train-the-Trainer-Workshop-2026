@@ -5,7 +5,7 @@
     "model": "minimax/MiniMax-M3",
     "responseModels": ["minimax/MiniMax-M3", "MiniMax-M3"],
     "effort": "low",
-    "maxOutputTokens": 6000,
+    "maxOutputTokens": 32000,
     "message": "Build a very simple meeting-cost calculator as one complete HTML file with inline CSS and JavaScript. No tools, packages, network calls, external resources, links or imports. Use a dark background, orange accent, system fonts, visible labels and keyboard focus, and a layout that fits 390px. Inputs: attendees (integer >= 1), duration in minutes (finite >= 0), hourly rate in CAD (finite >= 0). Defaults 4, 30, 150 show $300.00. Formula: attendees * minutes / 60 * rate. Update automatically on input; 60 minutes shows $600.00. Include Reset to defaults. No Calculate button. Reject blank, negative, nonfinite and fractional attendee values with visible errors and no stale total, NaN or Infinity. Use Intl.NumberFormat en-CA currency CAD with two decimals. Show a clear error if the calculation overflows. Keep the code short and basic; leave review and decisions to the coordinator. Do not delegate or describe tests you did not run."
   },
   "correctness": {
@@ -13,7 +13,7 @@
     "model": "anthropic/claude-sonnet-5-5",
     "responseModels": ["anthropic/claude-sonnet-5-5"],
     "effort": "high",
-    "maxOutputTokens": 4000,
+    "maxOutputTokens": 64000,
     "message": "Independently review the enclosed meeting-cost calculator source. Check formula attendees * minutes / 60 * CAD rate; defaults 4/30/150 = $300.00; 60 minutes = $600.00; auto-update; Reset; no Calculate button; blank, negative, nonfinite and fractional attendee validation; rounding; overflow. You have source only and no execution tools. Do not claim to have run code or seen screenshots. Return short Markdown with actionable findings, severity and source evidence, or no blocking findings. Do not edit, delegate or invent issues."
   },
   "frontend": {
@@ -21,7 +21,7 @@
     "model": "zai/glm-5.3",
     "responseModels": ["zai/glm-5.3", "glm-5.3"],
     "effort": "high",
-    "maxOutputTokens": 4000,
+    "maxOutputTokens": 64000,
     "message": "Act as the visual design lead for the enclosed fictional meeting-cost calculator. Give up to three actionable HTML/CSS changes, with selectors and intended effects, that would make this specific draft feel polished rather than plain. Aim for the offline backup's design language: charcoal canvas with a subtle orange glow, layered panels with soft borders and rounded corners, strong typography hierarchy, consistent spacing, a clear focal point for the total, and a fluid layout that fits 390px. Prioritize visible improvements over generic lint. Preserve contrast, visible keyboard focus, labels and error feedback, automatic updates and Reset. Use system fonts and no external assets. You have source only, not a rendering. Return concise Markdown with source evidence. Do not edit, delegate or invent issues."
   }
 }

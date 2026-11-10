@@ -86,6 +86,7 @@ assert.equal(fs.existsSync(log), false);
 const runId = prepare();
 assert.equal(count(), 3);
 const firstCalls = fs.readFileSync(log, 'utf8').trim().split('\n').map(JSON.parse).filter(item => item.req);
+assert.deepEqual(firstCalls.map(item => item.req.max_output_tokens), [32000, 64000, 64000]);
 assert.deepEqual(firstCalls.map(item => [item.req.model, item.req.reasoning.effort]), [
   ['minimax/MiniMax-M3', 'low'], ['anthropic/claude-sonnet-5-5', 'high'], ['zai/glm-5.3', 'high']
 ]);
