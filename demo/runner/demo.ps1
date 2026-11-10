@@ -39,7 +39,7 @@ if ($Mode -eq 'CheckBackup') {
 $preview = & $NodeExecutable (Join-Path $PSScriptRoot 'run.mjs') preview demo
 if ($LASTEXITCODE) { throw 'Foreground route plan failed. Check the runner above. No model request was sent.' }
 $plan = ($preview -join "`n") | ConvertFrom-Json
-if ($plan.workflow -ne 'coordinated-feedback-v3') {
+if ($plan.workflow -ne 'coordinated-feedback-v4') {
     throw 'The installed runner is out of date. No model request was sent.'
 }
 

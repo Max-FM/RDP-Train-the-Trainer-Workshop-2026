@@ -20,7 +20,7 @@
 ## The demo (slide 5, about 100 seconds)
 
 1. Point to the build and two review branches on slide 5, then show Providers or Logs in OpenCodeX for about 10 seconds. Keep account identifiers and credentials off screen.
-2. Show that both reviewers received the fresh draft. Point to a coordinator decision and an applied change in `demo/live/revision-notes.md`. MiniMax receives only the accepted changes and the draft check. A direct routed worker does not appear as a native Codex subagent.
+2. Show that both reviewers received the fresh draft, and that Z.ai also received Edge renderings of it (`demo/live/draft-desktop.png`). Point to a coordinator decision and an applied change in `demo/live/revision-notes.md`. MiniMax receives only the accepted changes and the draft check. A direct routed worker does not appear as a native Codex subagent.
 3. If the revised app has passed the browser check, briefly show it. If the run is still going or failed, open the offline backup and say: “This is the calculator from an earlier run.” Return to the conclusion by 4:45.
 
 Show the routed handoffs. There’s no need to trigger a quota failure live.

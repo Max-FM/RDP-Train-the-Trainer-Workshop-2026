@@ -11,7 +11,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rdp-workshop-test-'));
 const sourcePath = 'demo/reference/index.html';
 const launcher = 'demo/runner/demo.ps1';
-for (const file of [sourcePath, launcher, 'demo/runner/run.mjs', 'demo/runner/tasks.json', 'demo/runner/check.mjs']) {
+for (const file of [sourcePath, launcher, 'demo/runner/run.mjs', 'demo/runner/tasks.json', 'demo/runner/check.mjs', 'demo/runner/render.mjs']) {
   fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
   fs.copyFileSync(path.join(repo, file), path.join(root, file));
 }
@@ -37,8 +37,13 @@ const revised = ${JSON.stringify(revised)};
 globalThis.fetch = async (url, opts) => {
   const endpoint = String(url), req = opts?.body ? JSON.parse(opts.body) : null;
   fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({ endpoint, req }) + '\\n');
-  if (endpoint.endsWith('/v1/models')) return {ok:true,json:async()=>({data:ids.map(id=>({id}))})};
-  const input = req.input[0].content;
+  if (endpoint.endsWith('/v1/models')) return {ok:true,json:async()=>({data:ids.map(id=>({id,capabilities:{input_modalities:['text','image']}}))})};
+  const content = req.input[0].content;
+  const input = Array.isArray(content) ? content.find(part => part.type === 'input_text').text : content;
+  if (req.model === ids[2]) {
+    const images = Array.isArray(content) ? content.filter(part => part.type === 'input_image') : [];
+    if (images.length !== 2 || images.some(part => !part.image_url.startsWith('data:image/png;base64,iVBOR'))) throw Error('Z.ai must receive both PNG renderings');
+  } else if (Array.isArray(content)) throw Error('Only Z.ai receives images');
   let text;
   if (req.model === ids[0] && input.startsWith('Your previous reply')) {
     if (!input.includes('Problem:') || !input.includes('Original task:') || input.includes('external font XYZ')) throw Error('Bad repair handoff');
@@ -95,6 +100,12 @@ assert.deepEqual(firstCalls.map(item => item.req.max_output_tokens), [32000, 640
 assert.deepEqual(firstCalls.map(item => [item.req.model, item.req.reasoning.effort]), [
   ['minimax/MiniMax-M3', 'low'], ['anthropic/claude-sonnet-5-5', 'high'], ['zai/glm-5.3', 'high']
 ]);
+const zaiTrace = JSON.parse(fs.readFileSync(path.join(live, 'frontend-trace.json'), 'utf8'));
+assert.equal(zaiTrace.images.length, 2, 'Z.ai trace records both renderings');
+assert.equal(JSON.stringify(zaiTrace).includes('iVBOR'), false, 'Trace must not embed image data');
+assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'correctness-trace.json'), 'utf8')).images, undefined);
+for (const name of ['draft-desktop.png', 'draft-mobile.png']) assert.equal(fs.readFileSync(path.join(live, name)).subarray(1, 4).toString(), 'PNG');
+assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(live, 'review-ready.json'), 'utf8')).renderings), ['draft-desktop.png', 'draft-mobile.png']);
 coordinate(runId, false);
 assert.equal(run(['-Mode', 'Revise', '-RunId', runId]).status, 1);
 assert.equal(count(), 3);

@@ -10,6 +10,7 @@ The runner lives in `demo/runner/`. Codex normally drives it through the [worksh
 | `run.mjs` | The runner: route preflight, model requests, reply validation, file writes, and the publication gate. |
 | `tasks.json` | Model IDs, reasoning effort, output caps, and the brief or review prompt for each route. `run.mjs` refuses to run if these differ from its own route table. |
 | `check.mjs` | Offline Edge check of one HTML file using the bundled Playwright. |
+| `render.mjs` | Offline Edge rendering of the draft to desktop (1280px) and mobile (390px) PNGs in `demo/live/`. |
 | `local-runtime.json` | Optional, ignored by Git. Stores `nodeExecutable` and `nodeModules` paths for this machine. |
 
 ## Commands
@@ -32,7 +33,7 @@ Add `-NodeExecutable <path>` if `local-runtime.json` isn't set up.
 
 ## Stages
 
-**Prepare** checks Edge against the backup and confirms that OpenCodeX lists all three model IDs. Only then does it clear the previous generated files. It asks MiniMax for a fresh draft, then sends the same draft to Claude and Z.ai in parallel while Edge checks it. It ends by recording file hashes in `review-ready.json`. If either preflight fails, no model is called and earlier files stay in place.
+**Prepare** checks Edge against the backup and confirms that OpenCodeX lists all three model IDs and image input for the Z.ai model. Only then does it clear the previous generated files. It asks MiniMax for a fresh draft. Claude reviews the source, Edge checks the draft and renders it at 1280px and 390px, and Z.ai reviews the same source together with both renderings. It ends by recording file hashes in `review-ready.json`. If either preflight fails, no model is called and earlier files stay in place.
 
 **Coordinator decision.** The coordinator reads the draft, both reviews, and `draft-check.json`, then writes `coordination.json`:
 
@@ -70,6 +71,7 @@ All files are written to `demo/live/`, which is ignored by Git.
 | `draft.html`, `build-trace.json` | Prepare | MiniMax's draft and its request/response trace |
 | `correctness.md`, `frontend.md` and traces | Prepare | The two reviews |
 | `draft-check.json` | Prepare | Edge result for the draft |
+| `draft-desktop.png`, `draft-mobile.png` | Prepare | Edge renderings of the draft, the same images Z.ai received. The Z.ai trace records their hashes, not the image data. |
 | `review-ready.json` | Prepare | Run ID and hashes of the evidence |
 | `coordination.json` | Coordinator | Apply and skip decisions |
 | `revised.html`, `revision-trace.json`, `revised-check.json` | Revise | MiniMax's revision and its first check |
@@ -81,6 +83,8 @@ All files are written to `demo/live/`, which is ignored by Git.
 
 | Message | Meaning |
 |---|---|
+| `Proxy catalog does not list image input for ...` | The Z.ai route can't take images, so the visual review would run blind. No model was called. |
+| `Rendering the draft in Edge failed` | Edge couldn't render the draft. The Z.ai review is skipped and Prepare stops. Use the backup. |
 | `Backup/browser preflight failed` | Edge or the bundled Playwright isn't available. No model was called. |
 | `Proxy catalog is missing ...` | OpenCodeX isn't running or lacks a route. No model was called. |
 | `A newer Prepare attempt superseded this run` | Revise was given an old run ID. Start a new run. |

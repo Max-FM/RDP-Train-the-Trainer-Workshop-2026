@@ -8,7 +8,7 @@ flowchart LR
     R -->|/v1/responses| P[OpenCodeX proxy<br/>127.0.0.1:10100]
     P --> M[MiniMax M3<br/>build and revise]
     P --> S[Claude Sonnet 5.5<br/>correctness review]
-    P --> Z[Z.ai GLM 5.3<br/>visual design review]
+    P --> Z[Z.ai GLM 5.3<br/>visual design review<br/>source and renderings]
     R -->|offline| E[Edge via bundled Playwright]
     C -->|reads reviews, writes decisions| F[(demo/live)]
     R --> F
@@ -23,7 +23,7 @@ flowchart LR
 | Demo runner | `demo/runner/run.mjs`, started through `demo.ps1`. It sends the model requests, validates replies, runs the browser checks, and writes all run files. |
 | MiniMax M3 | Builds the calculator from a short brief, then implements the coordinator's accepted changes. Low reasoning effort. |
 | Claude Sonnet 5.5 | Reviews the draft's logic, validation, and rounding. High reasoning effort. |
-| Z.ai GLM 5.3 | Proposes up to three concrete visual changes, using the backup's design as the reference. High reasoning effort. It reviews source code and never sees a rendering. |
+| Z.ai GLM 5.3 | Proposes up to three concrete visual changes, using the backup's design as the reference. High reasoning effort. It reviews the source and two Edge renderings of the draft (1280px and 390px), and never sees the revised app. |
 | Edge | Checks each version of the app offline: totals, auto-update, Reset, input validation, a 390px layout, and zero network requests. |
 
 ## Data flow and scope

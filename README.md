@@ -21,7 +21,7 @@ Open this folder in Codex with OpenCodeX running locally, then paste one of the 
 - [prompts/demo-prompt.txt](prompts/demo-prompt.txt) runs the demo with the session's current model as coordinator.
 - [prompts/demo-prompt-opus.txt](prompts/demo-prompt-opus.txt) runs it with Claude Opus 5.5 as coordinator and no OpenAI usage. Select `anthropic-apikey/claude-opus-5-5` in the Codex model picker before pasting.
 
-You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minutes. MiniMax builds a calculator from scratch, Claude Sonnet and Z.ai review it, the coordinator decides which findings to apply, MiniMax revises, and Edge checks the result offline before it is published to `demo/live/index.html`. If anything fails, show the [backup](demo/backup/index.html) and say it's from an earlier run.
+You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minutes. MiniMax builds a calculator from scratch, Claude Sonnet reviews the source, Z.ai reviews the source and Edge renderings, the coordinator decides which findings to apply, MiniMax revises, and Edge checks the result offline before it is published to `demo/live/index.html`. If anything fails, show the [backup](demo/backup/index.html) and say it's from an earlier run.
 
 ## Requirements
 

@@ -13,7 +13,7 @@ It prints `PASS` and the temporary folder it used. A run takes about 30 to 60 se
 ## What it checks
 
 - Preview sends nothing.
-- Prepare clears only generated files, keeps the backup and unrelated files, and sends the same fresh draft to both reviewers.
+- Prepare clears only generated files, keeps the backup and unrelated files, and sends the same fresh draft to both reviewers, and sends only Z.ai the two PNG renderings (recorded by hash in its trace, with no image data).
 - Requests use the expected models, reasoning effort, and output caps.
 - Revise rejects a plan without a browser decision, tampered review evidence, and a second revise on the same run.
 - Skipped findings are never sent to MiniMax.
