@@ -8,7 +8,7 @@ Start with the [PowerPoint](outputs/model-routing-demo-context.pptx). It include
 - `outputs/backup/index.html`: the labelled earlier run. Open it directly in a browser.
 - `outputs/diagrams/`: three editable draw.io files.
 
-Before presenting, run `node outputs/demo-runner/run.mjs preview background` and approve the three exact requests together. Keep the approved digest for the launch command in the prepared prompt. At the opening, launch once and return to the deck. MiniMax makes a fresh build; the two reviewers check the fixed example from the preview. To have them review the fresh build instead, use the separate build and review steps in the prompt.
+Before presenting, run `node outputs/demo-runner/run.mjs preview background` and approve the three exact requests together. Keep that preview's one-use launch command. At the opening, launch once and return to the deck. The runner replaces the previous live build, preserves the existing backup (or creates it if missing), and checks the fresh MiniMax build in Edge. The two reviewers check the fixed example from the preview. To have them review the fresh build instead, use the separate build and review steps in the prompt.
 
 ## Verify the demo locally
 

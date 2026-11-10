@@ -3,6 +3,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 const runnerDir = path.dirname(fileURLToPath(import.meta.url));
@@ -15,7 +17,9 @@ const routes = {
   correctness: { model: 'anthropic/claude-sonnet-5-5', effort: 'high', cap: 4000, aliases: ['anthropic/claude-sonnet-5-5'] },
   frontend: { model: 'zai/glm-5.3', effort: 'low', cap: 4000, aliases: ['zai/glm-5.3', 'glm-5.3'] }
 };
-const allowedFiles = new Set(['index.html', 'build-trace.json', 'correctness-trace.json', 'frontend-trace.json', 'correctness.md', 'frontend.md', 'background-started.json']);
+const allowedFiles = new Set(['index.html', 'build-trace.json', 'correctness-trace.json', 'frontend-trace.json', 'correctness.md', 'frontend.md', 'background-started.json', 'live-check.json']);
+const liveArtifacts = [...allowedFiles, 'live-desktop.png', 'live-mobile.png'];
+const runIdFlag = /^--run-id=([a-f0-9-]{36})$/;
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 async function noLinks(target) {
@@ -30,12 +34,65 @@ async function noLinks(target) {
   }
 }
 async function writeLive(name, content) {
-  if (!allowedFiles.has(name)) throw Error('Output filename is not allowed.');
+  if (!allowedFiles.has(name) && !/^used-[a-f0-9-]{36}\.json$/.test(name)) throw Error('Output filename is not allowed.');
   const target = path.join(liveDir, name);
   await noLinks(target);
   await fs.mkdir(liveDir, { recursive: true });
   await noLinks(target);
   await fs.writeFile(target, content, { encoding: 'utf8', flag: 'wx' });
+}
+async function lockLive() {
+  const lock = path.join(liveDir, '.runner.lock');
+  await noLinks(lock);
+  await fs.mkdir(liveDir, { recursive: true });
+  await noLinks(lock);
+  try { await fs.writeFile(lock, String(process.pid), { flag: 'wx' }); }
+  catch (error) {
+    if (error.code === 'EEXIST') throw Error('A job is already active or its lock needs inspection. No request was sent.');
+    throw error;
+  }
+  return () => fs.unlink(lock);
+}
+async function resetLive() {
+  const existing = [];
+  for (const name of liveArtifacts) {
+    const target = path.join(liveDir, name);
+    await noLinks(target);
+    try {
+      if (!(await fs.lstat(target)).isFile()) throw Error(`Refusing to remove a non-file live artifact: ${name}`);
+      existing.push(target);
+    } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
+  for (const target of existing) await fs.unlink(target);
+}
+async function ensureBackup() {
+  const target = path.join(root, 'outputs/backup/index.html');
+  await noLinks(target);
+  try {
+    if (!(await fs.lstat(target)).isFile()) throw Error('Backup path exists and is not a regular file.');
+    return;
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  const source = path.join(root, 'outputs/demo/index.html');
+  await noLinks(source);
+  const html = await fs.readFile(source, 'utf8');
+  validateHtml(html);
+  const body = /<body(?:\s[^>]*)?>/i;
+  if (!body.test(html)) throw Error('Bundled example has no body for the backup label.');
+  const backup = html.replace(body, '$&\n<p role="status" style="text-align:center;font-weight:bold">BACKUP — prepared offline example</p>');
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await noLinks(target);
+  await fs.writeFile(target, backup, { encoding: 'utf8', flag: 'wx' });
+  console.log('Created offline backup at outputs/backup/index.html.');
+}
+async function checkLive() {
+  try {
+    const result = await promisify(execFile)(process.execPath, [path.join(runnerDir, 'check.mjs')], { cwd: root, timeout: 45000, windowsHide: true });
+    await writeLive('live-check.json', JSON.stringify({ passed: true, summary: result.stdout.trim() }) + '\n');
+    console.log(result.stdout.trim());
+  } catch (error) {
+    await writeLive('live-check.json', JSON.stringify({ passed: false, summary: error.message }) + '\n');
+    throw Error('Live widget did not pass the browser check. See outputs/live-demo/live-check.json and use the backup.');
+  }
 }
 function validateSpec() {
   if (spec.endpoint !== endpoint) throw Error('Proxy destination changed. Stop for review.');
@@ -83,8 +140,13 @@ async function sendOne(item) {
   const timer = setTimeout(() => controller.abort(), 150000);
   let response;
   try {
-    response = await fetch(endpoint, { method: 'POST', redirect: 'error',
-      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item.request), signal: controller.signal });
+    try {
+      response = await fetch(endpoint, { method: 'POST', redirect: 'error',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item.request), signal: controller.signal });
+    } catch (error) {
+      const detail = controller.signal.aborted ? 'timed out after 150 seconds' : [error.cause?.code, error.cause?.message].filter(Boolean).join(': ') || error.message;
+      throw Error(`${item.key}: request to ${endpoint} failed: ${detail}. No retry.`, { cause: error });
+    }
     if (!response.ok) throw Error(`Proxy returned HTTP ${response.status}. No fallback or retry.`);
     const data = await response.json();
     await writeLive(`${item.key}-trace.json`, JSON.stringify({
@@ -113,37 +175,55 @@ async function sendOne(item) {
 }
 
 try {
-  const [action = 'preview', stage = 'build', approval, ...extra] = process.argv.slice(2);
+  const [action = 'preview', stage = 'build', approval, runFlag, ...extra] = process.argv.slice(2);
+  const background = stage === 'background';
+  const suppliedRun = runFlag?.match(runIdFlag)?.[1];
   if (!['preview', 'send'].includes(action) || !['build', 'reviews', 'background'].includes(stage) || extra.length ||
-      (action === 'preview' && approval) || (action === 'send' && !/^--approved-sha256=[a-f0-9]{64}$/.test(approval ?? ''))) {
-    throw Error('Usage: run.mjs preview build|reviews|background OR run.mjs send build|reviews|background --approved-sha256=<digest>. Sending is allowed only after the user explicitly approves the displayed recipients and full content.');
+      (action === 'preview' && (approval || runFlag)) ||
+      (action === 'send' && (!/^--approved-sha256=[a-f0-9]{64}$/.test(approval ?? '') ||
+        (background ? !suppliedRun : !!runFlag)))) {
+    throw Error('Use run.mjs preview background and the preview’s launch command after approval. For manual runs, use preview build|reviews or send build|reviews --approved-sha256=<digest>.');
   }
   validateSpec();
   const items = await plan(stage);
-  const digest = hash(JSON.stringify(items));
+  const runId = background ? (suppliedRun ?? crypto.randomUUID()) : null;
+  const digest = hash(JSON.stringify(background ? { runId, requests: items } : items));
   if (action === 'preview') {
     console.log(JSON.stringify({ kind: 'REQUEST PREVIEW ONLY — no provider contacted',
       upstream: 'OpenCodex resolves each exact model route through its current configuration. Verify the provider destination in the dashboard before approval; this runner does not inspect or modify provider configuration.',
-      ...(stage === 'background' ? { sequence: 'Fresh build, then parallel reviews of the fixed example. The fresh build is not sent to reviewers.' } : {}),
+      ...(background ? { runId, launch: `node outputs/demo-runner/run.mjs send background --approved-sha256=${digest} --run-id=${runId}`,
+        sequence: 'Preserve the existing backup (create it from the bundled offline example only if missing), clear prior live artifacts, build afresh, then verify locally and review the fixed example in parallel.' } : {}),
       requests: items, approvalSha256: digest }, null, 2));
   } else {
     if (approval !== `--approved-sha256=${digest}`) throw Error('Approval digest does not match the exact current messages and source. Preview again and obtain fresh approval.');
-    await noLinks(liveDir);
-    for (const item of items) {
-      for (const name of [`${item.key}-trace.json`, item.key === 'build' ? 'index.html' : `${item.key}.md`]) {
-        try { await fs.lstat(path.join(liveDir, name)); throw Error(`Refusing to overwrite existing ${name}. Use the backup or have the coordinator resolve the existing live run.`); }
-        catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const release = await lockLive();
+    try {
+      let work;
+      if (background) {
+        try { await writeLive(`used-${runId}.json`, JSON.stringify({ approvalSha256: digest }) + '\n'); }
+        catch (error) {
+          if (error.code === 'EEXIST') throw Error('This approved launch was already attempted. No request was sent.');
+          throw error;
+        }
+        await ensureBackup();
+        await resetLive();
+        await writeLive('background-started.json', JSON.stringify({ runId, approvalSha256: digest, startedAt: new Date().toISOString() }) + '\n');
+        console.log(`Background run ${runId} started.`);
+        await sendOne(items[0]);
+        work = [...items.slice(1).map(sendOne), checkLive()];
+      } else {
+        for (const item of items) {
+          for (const name of [`${item.key}-trace.json`, item.key === 'build' ? 'index.html' : `${item.key}.md`]) {
+            try { await fs.lstat(path.join(liveDir, name)); throw Error(`Refusing to overwrite existing ${name}. Use the backup or have the coordinator resolve the existing live run.`); }
+            catch (error) { if (error.code !== 'ENOENT') throw error; }
+          }
+        }
+        work = items.map(sendOne);
       }
-    }
-    let queue = items;
-    if (stage === 'background') {
-      await writeLive('background-started.json', JSON.stringify({ approvalSha256: digest, startedAt: new Date().toISOString() }) + '\n');
-      await sendOne(items[0]);
-      queue = items.slice(1);
-    }
-    const outcomes = await Promise.allSettled(queue.map(sendOne));
-    const failed = outcomes.filter(outcome => outcome.status === 'rejected');
-    if (failed.length) throw Error(failed.map(outcome => outcome.reason.message).join('\n'));
+      const outcomes = await Promise.allSettled(work);
+      const failed = outcomes.filter(outcome => outcome.status === 'rejected');
+      if (failed.length) throw Error(failed.map(outcome => outcome.reason.message).join('\n'));
+    } finally { await release(); }
   }
 } catch (error) {
   console.error(error.message);

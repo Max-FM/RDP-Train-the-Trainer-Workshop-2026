@@ -3,12 +3,26 @@
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const file = path.resolve(root, process.argv[2] ?? 'outputs/live-demo/index.html');
 const liveDir = path.join(root, 'outputs/live-demo');
 const shots = path.dirname(file) === liveDir;
-const pw = createRequire(import.meta.url)('playwright');
+const require = createRequire(import.meta.url);
+let playwrightPath;
+try { playwrightPath = require.resolve('playwright'); }
+catch (error) {
+  if (error.code !== 'MODULE_NOT_FOUND') throw error;
+  let modules = process.env.RUNTIME_NODE_MODULES ?? process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES;
+  if (!modules) {
+    try { modules = JSON.parse(await fs.readFile(new URL('local-runtime.json', import.meta.url), 'utf8')).nodeModules; }
+    catch (configError) { if (configError.code !== 'ENOENT') throw configError; }
+  }
+  if (!modules || !path.isAbsolute(modules)) throw Error('Playwright unavailable. Install it or configure the bundled runtime before launching.');
+  playwrightPath = require.resolve(path.join(modules, 'playwright'));
+}
+const pw = require(playwrightPath);
 const { chromium } = pw.default ?? pw;
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 try {

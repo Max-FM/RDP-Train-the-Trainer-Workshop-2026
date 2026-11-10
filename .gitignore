@@ -1,3 +1,4 @@
 node_modules/
 outputs/live-demo/
+outputs/demo-runner/local-runtime.json
 ~$*.pptx

@@ -14,13 +14,13 @@
 ## Before the talk
 
 - Open the PowerPoint, a Codex chat rooted in the project or kit folder, the OpenCodeX dashboard, and the [labelled offline backup](backup/index.html).
-- Follow the [prepared prompt](demo-prompt.txt). Run `node outputs/demo-runner/run.mjs preview background`, verify the model destinations in OpenCodeX, and approve the three full requests together before presenting. Keep that approval digest for the launch. Use an empty `outputs/live-demo/` directory; the runner refuses to overwrite earlier results.
+- Follow the [prepared prompt](demo-prompt.txt). Run `node outputs/demo-runner/run.mjs preview background` from the same project folder you’ll use in the talk. If it only lists `build` and `reviews`, that folder has the old runner. Verify the model destinations in OpenCodeX and approve the three full requests together before presenting. Keep the one-use launch command printed by that preview. The runner removes only generated live results and leaves the existing offline backup alone. Before launch, make sure Playwright and Edge are available for the automatic browser check.
 - Keep the [earlier-run record](backup/run-record.md) open with the backup. It records what each provider did during preparation.
 
 ## The 50-second demo
 
 1. Point to the build and two review branches on slide 5, then show Providers or Logs in OpenCodeX for about 10 seconds. Keep account identifiers and credentials off screen.
 2. Show which routes handled the build and two reviews, and where the results came back. Say that MiniMax built a fresh widget and both reviewers checked a fixed example. This made it possible to approve all three exact requests before the talk. A direct routed worker does not appear as a native Codex subagent.
-3. If the live run has finished, briefly show the working widget. If it hasn’t, use the labelled backup: “This is an earlier run of the same workflow.” Return to the conclusion by 4:45.
+3. If the live build has passed the browser check, briefly show it. Otherwise open the offline backup and say: “This is the calculator from an earlier run.” Return to the conclusion by 4:45.
 
 Show the routed handoffs. There’s no need to trigger a quota failure live.
