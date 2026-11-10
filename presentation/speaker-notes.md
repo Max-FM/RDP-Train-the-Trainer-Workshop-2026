@@ -70,6 +70,6 @@ So, can those models work together without splitting the project? Yes. Keep the 
 
 ## Untimed appendix
 
-Use only if asked. The architecture diagram records the workflow used to prepare the lesson and demo. The Z.ai slide review applies to the previous version.
+Use only if asked. Slide 7 shows how the lesson was produced: Codex coordinated and called four plugins, a project skill and AGENTS.md kept each run consistent, and MiniMax, Claude Sonnet and Z.ai worked through OpenCodeX. The coordinator can run on any model you choose in Codex without changing the workflow.
 
 Spoken script: 556 words, plus demo actions and pauses.
