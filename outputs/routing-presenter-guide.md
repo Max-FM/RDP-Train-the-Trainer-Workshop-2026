@@ -4,7 +4,7 @@
 
 | Time | Slide | What to do |
 |---|---|---|
-| 0:00–0:45 | Model routing | Start with the problem of using models from different subscriptions without splitting the workflow. If running live, submit the prepared prompt after the opening and return immediately to the deck. |
+| 0:00–0:45 | Model routing | Start with the problem of using models from different subscriptions without splitting the workflow. Launch the approved background job and return immediately to the deck. |
 | 0:45–1:35 | The solution: keep Codex | Walk one request through the local proxy. Explain the OpenCode choice here. |
 | 1:35–2:45 | Two ways to use another model | Explain when to switch the lead model and when to delegate a focused job. |
 | 2:45–3:55 | Making better use of your subscriptions | Explain how assigning routine work to suitable routes preserves premium capacity. Cover limits, fallback and pooling as secondary use cases. |
@@ -14,13 +14,13 @@
 ## Before the talk
 
 - Open the PowerPoint, a Codex chat rooted in the project or kit folder, the OpenCodeX dashboard, and the [labelled offline backup](backup/index.html).
-- Review the exact model assignments and destinations in the [prepared prompt](demo-prompt.txt). Preflight the proxy and model list before presenting. The runner’s preview sends no model requests. Use an empty `outputs/live-demo/` directory; the runner refuses to overwrite earlier results.
+- Follow the [prepared prompt](demo-prompt.txt). Run `node outputs/demo-runner/run.mjs preview background`, verify the model destinations in OpenCodeX, and approve the three full requests together before presenting. Keep that approval digest for the launch. Use an empty `outputs/live-demo/` directory; the runner refuses to overwrite earlier results.
 - Keep the [earlier-run record](backup/run-record.md) open with the backup. It records what each provider did during preparation.
 
 ## The 50-second demo
 
 1. Point to the build and two review branches on slide 5, then show Providers or Logs in OpenCodeX for about 10 seconds. Keep account identifiers and credentials off screen.
-2. Show which routes handled the build and two reviews, and where the results came back. Report the route that actually ran. A direct routed worker does not appear as a native Codex subagent.
+2. Show which routes handled the build and two reviews, and where the results came back. Say that MiniMax built a fresh widget and both reviewers checked a fixed example. This made it possible to approve all three exact requests before the talk. A direct routed worker does not appear as a native Codex subagent.
 3. If the live run has finished, briefly show the working widget. If it hasn’t, use the labelled backup: “This is an earlier run of the same workflow.” Return to the conclusion by 4:45.
 
 Show the routed handoffs. There’s no need to trigger a quota failure live.

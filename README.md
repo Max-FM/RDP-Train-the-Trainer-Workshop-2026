@@ -4,11 +4,11 @@ Start with the [PowerPoint](outputs/model-routing-demo-context.pptx). It include
 
 - `outputs/routing-presenter-guide.md`: setup, timing, and the brief demonstration.
 - `outputs/routing-speaker-notes.md`: the script and product sources.
-- `outputs/demo-prompt.txt`: the existing prepared prompt.
+- `outputs/demo-prompt.txt`: the prepared prompt for a single background launch.
 - `outputs/backup/index.html`: the labelled earlier run. Open it directly in a browser.
 - `outputs/diagrams/`: three editable draw.io files.
 
-Keep the folder structure intact if you use the demo runner. Preview the exact requests before intentionally starting a live run. The demo runs after the explanation; launch the build quietly after the opening if you want it to run in the background.
+Before presenting, run `node outputs/demo-runner/run.mjs preview background` and approve the three exact requests together. Keep the approved digest for the launch command in the prepared prompt. At the opening, launch once and return to the deck. MiniMax makes a fresh build; the two reviewers check the fixed example from the preview. To have them review the fresh build instead, use the separate build and review steps in the prompt.
 
 ## Verify the demo locally
 

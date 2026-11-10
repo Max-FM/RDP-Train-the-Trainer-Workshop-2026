@@ -46,7 +46,7 @@ Once I can assign models by job, I can also make better use of the plans I alrea
 
 **Action:** Point to the build and review branches, then briefly show Providers or Logs in OpenCodeX. Show which routes ran and where the findings came back. Use the labelled earlier run if needed. Return to the deck by 4:45.
 
-Here’s that delegation pattern in one task. MiniMax builds from a short brief. Claude checks the logic, while Z.ai reviews the interface. Codex brings the findings together. In OpenCodeX, here’s where I can see the routes. Back in Codex, here’s the build and the two reviews coming back to the coordinator. If the live run is still going, I’ll show an earlier run of the same workflow.
+Here’s that delegation pattern. MiniMax builds from a short brief. For this background run, Claude checks the logic and Z.ai reviews the interface of the same fixed example. That let me approve all three requests before we started. Here’s where I can see the routes in OpenCodeX, and here’s where the results came back. If the live run is still going, I’ll show the earlier run, where the reviewers checked the actual build.
 
 - https://opencodex.me/guides/web-dashboard/
 - https://opencodex.me/guides/sub-agent-surface/

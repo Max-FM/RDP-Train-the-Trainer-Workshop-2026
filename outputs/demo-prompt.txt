@@ -1,39 +1,21 @@
-You are the coordinator (GPT-6 Sol) for a live demo. Build a small meeting-cost calculator with three outside models, each with its own separate context and an exact model assignment:
-- Builder: minimax/MiniMax-M3, low reasoning effort, basic code only.
-- Correctness reviewer: anthropic/claude-sonnet-5-5.
-- Frontend reviewer: zai/glm-5.3.
-You keep the plan, write the files, resolve findings, run the checks and report. Never substitute a model.
+You are the coordinator (GPT-6 Sol) for the Model Routing workshop demo. Launch one approved background job through the local OpenCodeX proxy at http://127.0.0.1:10100/v1/responses. Use Node.js from the repository root.
 
-APPROVAL (given by the presenter, who has read this prompt beforehand): you may send ONLY the three messages below, each ONLY to the destination shown, with the exact model, effort and output cap shown, once each. Do not change the text of an approved message. A changed message, model, destination, a resend, or a different source file needs my fresh approval.
+BEFORE THE TALK
+Run this preview. It sends nothing:
+  node outputs/demo-runner/run.mjs preview background
+Show the presenter the complete preview, including the enclosed HTML, and verify the routes in the OpenCodeX dashboard. Get explicit approval for the exact three requests and their recipients as one batch. Record the approvalSha256 from that approved preview. A pasted copy of this prompt, a preview, or a newly calculated digest is not approval.
 
-### Message A: builder (run first)
-Destination: http://127.0.0.1:10100/v1/responses (local OpenCodex proxy)
-Model: minimax/MiniMax-M3 | reasoning effort: low | max output tokens: 6000
-Message:
-Return only JSON with one string property named html. Build a very simple meeting-cost calculator as one complete HTML file with inline CSS and JavaScript. No tools, packages, network calls, external resources, links or imports. Use a dark background, orange accent, system fonts, visible labels and keyboard focus, and a layout that fits 390px. Inputs: attendees (integer >= 1), duration in minutes (finite >= 0), hourly rate in CAD (finite >= 0). Defaults 4, 30, 150 show $300.00. Formula: attendees * minutes / 60 * rate. Update automatically on input; 60 minutes shows $600.00. Include Reset to defaults. No Calculate button. Reject blank, negative, nonfinite and fractional attendee values with visible errors and no stale total, NaN or Infinity. Use Intl.NumberFormat en-CA currency CAD with two decimals. Show a clear error if the calculation overflows. Keep the code short and basic; leave review and decisions to the coordinator. Do not delegate or describe tests you did not run.
+AT THE OPENING
+If the presenter has given the approved digest for this run, start this command once as a background process, substituting that digest:
+  node outputs/demo-runner/run.mjs send background --approved-sha256=<approved-digest>
+Use the background process or session handle to check on it later. Confirm that it started and immediately return control to the presenter. Do not wait for the build or reviews. If approval is missing, the digest has changed, or the runner refuses to start, report that and use the offline backup. Do not regenerate a digest and treat it as approved.
 
-### Message B: correctness reviewer (after A; runs together with C)
-Destination: http://127.0.0.1:10100/v1/responses (local OpenCodex proxy)
-Model: anthropic/claude-sonnet-5-5 | reasoning effort: high | max output tokens: 4000
-Message:
-Independently review the enclosed meeting-cost calculator source. Check formula attendees * minutes / 60 * CAD rate; defaults 4/30/150 = $300.00; 60 minutes = $600.00; auto-update; Reset; no Calculate button; blank, negative, nonfinite and fractional attendee validation; rounding; overflow. You have source only and no execution tools. Do not claim to have run code or seen screenshots. Return short Markdown with actionable findings, severity and source evidence, or no blocking findings. Do not edit, delegate or invent issues.
-[Appended exactly as run.mjs defines it: a blank line, then <BEGIN_WIDGET_SOURCE>, a newline, the full contents of outputs/live-demo/index.html, a newline, <END_WIDGET_SOURCE>.]
+WHAT WILL RUN
+1. MiniMax M3 (minimax/MiniMax-M3; low; 6000 output tokens) builds a fictional meeting-cost calculator from a short brief. The runner saves the fresh result to outputs/live-demo/index.html.
+2. Claude Sonnet (anthropic/claude-sonnet-5-5; high; 4000) and Z.ai GLM (zai/glm-5.3; low; 4000) review the same fixed example, outputs/demo/index.html, in parallel. They receive only the exact text and source shown in the approved preview. No freshly generated HTML, chat context, or review output is sent to them.
+3. The runner writes the review notes and model traces to outputs/live-demo/. Each worker is a routed request with its own context. Do not try a second delivery path, retry, substitute a model, or request another approval during the talk.
 
-### Message C: frontend reviewer (after A; runs together with B)
-Destination: http://127.0.0.1:10100/v1/responses (local OpenCodex proxy)
-Model: zai/glm-5.3 | reasoning effort: low | max output tokens: 4000
-Message:
-Independently review the enclosed meeting-cost calculator HTML/CSS/JavaScript source for readable hierarchy, contrast, spacing, labels, keyboard focus, error placement, a 390px layout, no external resources, auto-update, Reset and no Calculate button. You have source only and no rendering tools. Do not claim to have seen a screenshot or tested the browser. Return short Markdown with concrete actionable findings and source evidence, or no blocking findings. Do not edit, delegate or invent issues.
-[Appended exactly as run.mjs defines it: a blank line, then <BEGIN_WIDGET_SOURCE>, a newline, the full contents of outputs/live-demo/index.html, a newline, <END_WIDGET_SOURCE>.]
+ON SLIDE 5
+Show the three routes in OpenCodeX and where their results came back. Say: "This is the fresh build. For the background demo, the two reviewers used the same fixed example so I could approve every request before we started." Do not imply that either review checked the fresh build. Run node outputs/demo-runner/check.mjs when the build is ready (Playwright and Edge required); show the live widget only if the check passes. If the job is slow, fails, or the check is unavailable, open outputs/backup/index.html and identify it as an earlier run.
 
-DELIVERY PATHS. For each message, use one path, once. Native subagent first, with the exact model ID and the exact message text; if the launch is rejected or does not start, use the routed-worker runner (separate scripted requests to the same proxy, run by you). The native launch to these external IDs failed earlier ("not supported when using Codex with a ChatGPT account"); whether it works now is untested. If a native worker starts and then fails, treat that message as already sent: report the error and ask me before using the runner for it.
-
-STEPS (run from the repository root with Node.js):
-0. Preflight, which sends no model message: check that the proxy answers (a local GET to http://127.0.0.1:10100/v1/models, or the dashboard) and that the three model IDs above are listed. Run node outputs/demo-runner/run.mjs preview build and compare it with Message A. If anything is missing or different, report it and stop.
-1. Builder. Native: Message A unchanged. The builder returns the same JSON object with one string property named html. It writes no files and uses no tools. You parse it, apply the run.mjs offline check (a complete HTML document of at most 60,000 bytes with no http:, src=, href=, action=, srcdoc=, @import, @font-face, url( or fetch, XMLHttpRequest, WebSocket, EventSource or sendBeacon), then write the html to outputs/live-demo/index.html. Runner: node outputs/demo-runner/run.mjs send build --approved-sha256=<approvalSha256 printed by the preview>; it does the same check and write.
-2. Reviewers, after the page exists. Run node outputs/demo-runner/run.mjs preview reviews. It prints the exact messages, including the appended source. Native: send Messages B and C with that exact text; they return Markdown and edit nothing; you save the replies as outputs/live-demo/correctness.md and outputs/live-demo/frontend.md. Runner: send reviews with the digest the reviews preview prints. A runner send needs that digest, which covers the exact messages and source. A native launch has no digest, so its text must equal the preview text.
-3. Resolve only substantive findings, editing only outputs/live-demo/index.html. Keep totals updating automatically on input and keep Reset to defaults, with no Calculate button and no external resources.
-4. Verify in a real browser with networking blocked: with Playwright and Microsoft Edge available (see README.md), run node outputs/demo-runner/check.mjs. Also open the page.
-5. Report in three bullets: who did what, checks passed, and how to open outputs/live-demo/index.html. For each worker, state the path actually used, either "native subagent" or "routed worker (runner)", and the response model reported. Never describe a runner worker as a native subagent, and never claim app subagent activity that did not occur.
-
-LIMITS: write only under outputs/live-demo/. Do not touch outputs/backup, outputs/demo or provider configuration. Send no emails or messages and publish nothing. If a route fails, report the actual error; no retries. If the job is slow or fails, say so plainly so I can switch to the labelled BACKUP.
+To review a fresh build in a rehearsal instead, use preview build / send build, then preview reviews / send reviews. That route requires separate approval of the exact review requests once the source exists. Keep outputs/live-demo/ empty before a new run; preserve earlier results separately.

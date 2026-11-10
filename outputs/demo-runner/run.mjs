@@ -15,7 +15,7 @@ const routes = {
   correctness: { model: 'anthropic/claude-sonnet-5-5', effort: 'high', cap: 4000, aliases: ['anthropic/claude-sonnet-5-5'] },
   frontend: { model: 'zai/glm-5.3', effort: 'low', cap: 4000, aliases: ['zai/glm-5.3', 'glm-5.3'] }
 };
-const allowedFiles = new Set(['index.html', 'build-trace.json', 'correctness-trace.json', 'frontend-trace.json', 'correctness.md', 'frontend.md']);
+const allowedFiles = new Set(['index.html', 'build-trace.json', 'correctness-trace.json', 'frontend-trace.json', 'correctness.md', 'frontend.md', 'background-started.json']);
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 async function noLinks(target) {
@@ -48,19 +48,24 @@ function validateSpec() {
   }
 }
 async function plan(stage) {
-  const keys = stage === 'build' ? ['build'] : ['correctness', 'frontend'];
+  const keys = stage === 'build' ? ['build'] : stage === 'background' ? ['build', 'correctness', 'frontend'] : ['correctness', 'frontend'];
+  const sourcePath = stage === 'background' ? 'outputs/demo/index.html' : stage === 'reviews' ? 'outputs/live-demo/index.html' : null;
   let source = null;
-  if (stage === 'reviews') {
-    const target = path.join(liveDir, 'index.html');
+  if (sourcePath) {
+    const target = path.join(root, sourcePath);
     await noLinks(target);
     source = await fs.readFile(target, 'utf8');
-    if (Buffer.byteLength(source) > 60000) throw Error('Live source exceeds the fixed review size limit.');
+    // Make the fixed example's exact outbound text independent of checkout line endings.
+    if (stage === 'background') source = source.replaceAll('\r\n', '\n');
+    validateHtml(source);
   }
   return keys.map(key => {
     const task = spec[key];
-    const message = source === null ? task.message : `${task.message}\n\n<BEGIN_WIDGET_SOURCE>\n${source}\n<END_WIDGET_SOURCE>`;
+    const review = key !== 'build';
+    const message = review ? `${task.message}\n\n<BEGIN_WIDGET_SOURCE>\n${source}\n<END_WIDGET_SOURCE>` : task.message;
     return {
-      role: task.role, key, endpoint, sourceSha256: source === null ? null : hash(source),
+      role: task.role, key, endpoint, sourceSha256: review ? hash(source) : null,
+      ...(stage === 'background' && review ? { sourcePath } : {}),
       request: { model: task.model, input: [{ role: 'user', content: message }], stream: false,
         store: false, reasoning: { effort: task.effort }, max_output_tokens: task.maxOutputTokens }
     };
@@ -85,6 +90,7 @@ async function sendOne(item) {
     await writeLive(`${item.key}-trace.json`, JSON.stringify({
       kind: 'routed worker; not a native subagent', completedAt: new Date().toISOString(),
       requestedModel: item.request.model, responseModel: data.model, sourceSha256: item.sourceSha256,
+      ...(item.sourcePath ? { sourcePath: item.sourcePath } : {}),
       request: item.request, usage: data.usage, status: data.status, output: data.output,
       exactResponseAliasAccepted: routes[item.key].aliases.includes(data.model)
     }, null, 2) + '\n');
@@ -99,7 +105,8 @@ async function sendOne(item) {
       validateHtml(html);
       await writeLive('index.html', html);
     } else {
-      await writeLive(`${item.key}.md`, `<!-- Routed worker; source SHA-256 ${item.sourceSha256} -->\n${prose}\n`);
+      const scope = item.sourcePath ? `Reviewed the fixed example \`${item.sourcePath}\`. This review does not cover the fresh build.\n\n` : '';
+      await writeLive(`${item.key}.md`, `<!-- Routed worker; source SHA-256 ${item.sourceSha256} -->\n${scope}${prose}\n`);
     }
     console.log(`${item.key}: received ${data.model}; saved under outputs/live-demo/. Browser verification remains with the coordinator.`);
   } finally { clearTimeout(timer); }
@@ -107,9 +114,9 @@ async function sendOne(item) {
 
 try {
   const [action = 'preview', stage = 'build', approval, ...extra] = process.argv.slice(2);
-  if (!['preview', 'send'].includes(action) || !['build', 'reviews'].includes(stage) || extra.length ||
+  if (!['preview', 'send'].includes(action) || !['build', 'reviews', 'background'].includes(stage) || extra.length ||
       (action === 'preview' && approval) || (action === 'send' && !/^--approved-sha256=[a-f0-9]{64}$/.test(approval ?? ''))) {
-    throw Error('Usage: run.mjs preview build|reviews OR run.mjs send build|reviews --approved-sha256=<digest>. Sending is allowed only after the user explicitly approves the displayed recipients and full content.');
+    throw Error('Usage: run.mjs preview build|reviews|background OR run.mjs send build|reviews|background --approved-sha256=<digest>. Sending is allowed only after the user explicitly approves the displayed recipients and full content.');
   }
   validateSpec();
   const items = await plan(stage);
@@ -117,6 +124,7 @@ try {
   if (action === 'preview') {
     console.log(JSON.stringify({ kind: 'REQUEST PREVIEW ONLY — no provider contacted',
       upstream: 'OpenCodex resolves each exact model route through its current configuration. Verify the provider destination in the dashboard before approval; this runner does not inspect or modify provider configuration.',
+      ...(stage === 'background' ? { sequence: 'Fresh build, then parallel reviews of the fixed example. The fresh build is not sent to reviewers.' } : {}),
       requests: items, approvalSha256: digest }, null, 2));
   } else {
     if (approval !== `--approved-sha256=${digest}`) throw Error('Approval digest does not match the exact current messages and source. Preview again and obtain fresh approval.');
@@ -127,7 +135,13 @@ try {
         catch (error) { if (error.code !== 'ENOENT') throw error; }
       }
     }
-    const outcomes = await Promise.allSettled(items.map(sendOne));
+    let queue = items;
+    if (stage === 'background') {
+      await writeLive('background-started.json', JSON.stringify({ approvalSha256: digest, startedAt: new Date().toISOString() }) + '\n');
+      await sendOne(items[0]);
+      queue = items.slice(1);
+    }
+    const outcomes = await Promise.allSettled(queue.map(sendOne));
     const failed = outcomes.filter(outcome => outcome.status === 'rejected');
     if (failed.length) throw Error(failed.map(outcome => outcome.reason.message).join('\n'));
   }
