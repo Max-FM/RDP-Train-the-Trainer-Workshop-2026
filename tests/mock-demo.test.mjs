@@ -40,14 +40,19 @@ globalThis.fetch = async (url, opts) => {
   if (endpoint.endsWith('/v1/models')) return {ok:true,json:async()=>({data:ids.map(id=>({id}))})};
   const input = req.input[0].content;
   let text;
-  if (req.model === ids[0] && input.startsWith('Revise ')) {
+  if (req.model === ids[0] && input.startsWith('Your previous reply')) {
+    if (!input.includes('Problem:') || !input.includes('Original task:') || input.includes('external font XYZ')) throw Error('Bad repair handoff');
+    text = JSON.stringify({html:process.env.RDP_BAD_REPAIR ? draft.replace('Reset to defaults','Reset calculator to defaults') : revised,
+      applied:['Fixed duration','Clarified Reset'],skipped:[]});
+  } else if (req.model === ids[0] && input.startsWith('Revise ')) {
     if (input.includes('one string property named html')) throw Error('Conflicting build format in the revision request');
     const feedback = JSON.parse(input.split('Feedback data (JSON):\\n')[1]);
     if (feedback.draft !== draft || feedback.accepted.length !== 3 || input.includes('external font XYZ') || feedback.browserCheck.passed) {
       throw Error('Wrong coordinator handoff');
     }
-    text = JSON.stringify({html:process.env.RDP_FAIL_FINAL ? draft.replace('Reset to defaults','Reset calculator to defaults') : revised,
-      applied:['Fixed duration','Clarified Reset'],skipped:[]});
+    text = process.env.RDP_BAD_JSON ? '{ "html": "return}' + String.fromCharCode(92) + ';" }' :
+      JSON.stringify({html:process.env.RDP_FAIL_FINAL ? draft.replace('Reset to defaults','Reset calculator to defaults') : revised,
+        applied:['Fixed duration','Clarified Reset'],skipped:[]});
   } else if (req.model === ids[0]) {
     if (!input.startsWith('Return only JSON with one string property named html.')) throw Error('Missing build format');
     text = JSON.stringify({html:draft});
@@ -109,11 +114,28 @@ assert.equal(run(['-Mode', 'Revise', '-RunId', runId]).status, 1);
 assert.equal(count(), 4);
 const next = prepare();
 coordinate(next);
-const failed = run(['-Mode', 'Revise', '-RunId', next], { RDP_FAIL_FINAL: '1' });
+const failed = run(['-Mode', 'Revise', '-RunId', next], { RDP_FAIL_FINAL: '1', RDP_BAD_REPAIR: '1' });
 assert.equal(failed.status, 1, failed.stdout);
 assert.match(failed.stderr, /Revised app did not pass Edge/);
 assert.equal(fs.existsSync(path.join(live, 'index.html')), false);
 assert.equal(fs.readFileSync(backup, 'utf8'), originalBackup);
+const afterFailed = count();
+assert.equal(afterFailed, 4 + 3 + 2, 'A bad revision gets exactly one repair attempt');
+const badJson = prepare();
+coordinate(badJson);
+const jsonRecovery = run(['-Mode', 'Revise', '-RunId', badJson], { RDP_BAD_JSON: '1' });
+assert.equal(jsonRecovery.status, 0, jsonRecovery.stdout + '\n' + jsonRecovery.stderr);
+assert.equal(fs.readFileSync(path.join(live, 'index.html'), 'utf8'), revised);
+assert.match(fs.readFileSync(path.join(live, 'revision-notes.md'), 'utf8'), /needed one repair/);
+assert.equal(count(), afterFailed + 3 + 2);
+const badCheck = prepare();
+coordinate(badCheck);
+const checkRecovery = run(['-Mode', 'Revise', '-RunId', badCheck], { RDP_FAIL_FINAL: '1' });
+assert.equal(checkRecovery.status, 0, checkRecovery.stdout + '\n' + checkRecovery.stderr);
+assert.equal(fs.readFileSync(path.join(live, 'index.html'), 'utf8'), revised);
+assert.equal(fs.existsSync(path.join(live, 'repaired.html')), true);
+assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'revised-check.json'), 'utf8')).passed, false);
+assert.equal(JSON.parse(fs.readFileSync(path.join(live, 'live-check.json'), 'utf8')).passed, true);
 const liveSnapshot = fs.readFileSync(path.join(live, 'review-ready.json'), 'utf8');
 fs.writeFileSync(path.join(root, 'outputs/demo-runner/check.mjs'), "throw Error('Missing browser in preflight test');");
 const before = count();
