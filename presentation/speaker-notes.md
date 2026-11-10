@@ -20,21 +20,21 @@ I keep working in Codex and install OpenCodeX as a local proxy. When I select a 
 - https://opencode.ai/docs/
 - https://opencode.ai/docs/plugins/
 
-## 1:35–2:45 — Two ways to use another model
+## 1:35–2:30 — Two ways to use another model
 
 **Action:** Use the two columns to explain what changes when you switch versus when you delegate.
 
-There are two ways to use another model. The first is to switch. I stay in the same task and choose which model handles my next request. I might switch when I move from drafting to a harder question and want a different model to take the lead. The second is to delegate. The main agent stays in charge and gives another model a specific job, like checking a decision I’ve already made. That worker gets a brief and the context it needs, then reports back. The coordinator can also give two workers independent assignments at the same time. In both cases I keep the same workspace. The difference is whether I’m choosing who handles the next turn or adding a worker to do one part of the task.
+There are two ways to use another model. The first is to switch. I stay in the same task and choose which model handles my next request, for example when I move from drafting to a harder question. The second is to delegate. The main agent stays in charge and gives another model a specific job, like checking a decision I’ve already made. That worker gets a brief and the context it needs, then reports back. In both cases I keep the same workspace.
 
 - https://opencodex.me/guides/sub-agent-surface/
 - https://learn.chatgpt.com/docs/agent-configuration/subagents
 - https://opencodex.me/guides/model-routing/
 
-## 2:45–3:55 — Making better use of your subscriptions
+## 2:30–3:05 — Making better use of your subscriptions
 
 **Action:** Lead with spreading routine work across existing subscriptions. Treat usage limits, fallback and pooling as secondary use cases.
 
-Once I can assign models by job, I can also make better use of the plans I already have. If a lower-cost route can handle routine work, I can save premium capacity for harder tasks. That may help me avoid upgrading one subscription to cover everything. I still check the costs, especially if a route bills API usage separately. If a route runs low, I can switch to another with available usage. A configured fallback can try the next eligible route on certain failures. Pooling is another option: Codex Pool mode can select another eligible Codex account, and there’s a separate experimental pool for eligible Claude Code workflows. The key is that each route still has its own account and limits.
+Once I can assign models by job, I can make better use of the plans I already have. Routine work can go to a lower-cost route, which saves premium capacity for harder tasks. If a route runs low, I can switch to another, or let a configured fallback take over. OpenCodeX can also pool eligible accounts, but each account keeps its own limits. I still check the costs.
 
 - https://opencodex.me/guides/web-dashboard/#codex-auth-and-account-pools
 - https://opencodex.me/guides/claude-code/#claude-oauth-account-pool-experimental
@@ -42,20 +42,20 @@ Once I can assign models by job, I can also make better use of the plans I alrea
 - https://opencodex.me/guides/combos/
 - https://opencodex.me/guides/codex-app-models/#native-quota-fallback-limitation
 
-## 3:55–4:45 — Demo: one build, two reviews
+## 3:05–4:45 — Demo: one build, two reviews
 
-**Action:** Show the draft, both reviews, the coordinator’s decisions, MiniMax’s changes and the final Edge check. Briefly show Providers or Logs in OpenCodeX. If the run is still going, open the backup. Return to the deck by 4:45.
+**Action:** Show the draft, both reviews, the coordinator’s decisions, MiniMax’s changes and the offline browser check (Edge). Briefly show Providers or Logs in OpenCodeX. If the run is still going, open the backup. Return to the deck by 4:45.
 
-Here’s that delegation pattern. MiniMax builds from a short brief. Claude checks the logic and Z.ai suggests visual improvements to that same draft. Codex decides which findings apply and sends those changes back to MiniMax. Here’s what changed, and here’s the check on the revised app. If the run is still going, I’ll show the calculator from an earlier run.
+Here’s that delegation pattern. MiniMax builds from a short brief. Claude checks the logic and Z.ai suggests visual improvements to that same draft. In the same Codex session, the coordinator decides which findings apply and sends those changes back to MiniMax. An offline browser check then verifies the revised app. In OpenCodeX, the logs show which route handled each request. If the run is still going, I’ll show the calculator from an earlier run.
 
 - https://opencodex.me/guides/web-dashboard/
 - https://opencodex.me/guides/sub-agent-surface/
 
-## 4:45–5:30 — Keep the work in one place
+## 4:45–5:30 — Many models, one workflow
 
 **Action:** Return to the final slide. Answer the opening question, then pause for questions. Appendix only if asked.
 
-So, can those models work together without splitting the project? Yes. Keep the plan and files in Codex, assign each job to a model you already have access to, and have the coordinator bring the results back. Spreading routine work across plans can preserve premium capacity, but the reason I use this setup is that the workflow stays together. If you try it, start with one build and one independent review.
+Back to the question: how do you build and review with different models without moving the work between apps? Keep the task in Codex, send each job to the model that suits it, and let the coordinator decide which findings to apply. You just saw that with a build, two reviews and a verified fix. Your next step: pick one small task, give the build to one model and the review to another, and decide what to apply.
 
 - https://opencodex.me/guides/model-routing/
 - https://opencodex.me/guides/web-dashboard/#codex-auth-and-account-pools
@@ -72,4 +72,4 @@ So, can those models work together without splitting the project? Yes. Keep the 
 
 Use only if asked. Slide 7 shows how the lesson was produced: Codex coordinated and called four plugins, a project skill and AGENTS.md kept each run consistent, and MiniMax, Claude Sonnet and Z.ai worked through OpenCodeX. The coordinator can run on any model you choose in Codex without changing the workflow.
 
-Spoken script: 556 words, plus demo actions and pauses.
+Spoken script: 479 words, plus demo actions and pauses.
