@@ -70,6 +70,7 @@ Back to the question: how do you build and review with different models without 
 
 ## Untimed appendix
 
-Use only if asked. Slide 7 shows how the lesson was produced: Codex coordinated and called four plugins, a project skill and AGENTS.md kept each run consistent, and MiniMax, Claude Sonnet and Z.ai worked through OpenCodeX. The coordinator can run on any model you choose in Codex without changing the workflow.
+Use only if asked. Slide 7 shows how the lesson was produced: Codex coordinated and called four plugins, a project skill and AGENTS.md kept each run consistent, and the models went through OpenCodeX. OpenAI GPT models coordinated first, until usage limits ran out, and then Claude models took over. MiniMax, Claude Sonnet and Z.ai did the building and reviewing. The coordinator can run on any model you choose in Codex without changing the workflow.
+
 
 Spoken script: 479 words, plus demo actions and pauses.
