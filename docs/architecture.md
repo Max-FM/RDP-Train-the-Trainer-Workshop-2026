@@ -18,7 +18,7 @@ flowchart LR
 
 | Component | Role |
 |---|---|
-| Codex coordinator | The model running the Codex session. It starts each runner stage, reads the draft and reviews, and decides which findings to apply. It can be a GPT model or Claude Opus through OpenCodeX. |
+| Codex coordinator | The model running the Codex session. It starts each runner stage, reads the draft and reviews, and decides which findings to apply. The live demo and the backup run used GPT-6.1 Sol, but it can be any model that Codex can select, such as Claude Opus through OpenCodeX. |
 | OpenCodeX | A local proxy that receives OpenAI-style requests and forwards each one to the provider for the requested model ID, using that provider's subscription or API key. |
 | Demo runner | `demo/runner/run.mjs`, started through `demo.ps1`. It sends the model requests, validates replies, runs the browser checks, and writes all run files. |
 | MiniMax M3 | Builds the calculator from a short brief, then implements the coordinator's accepted changes. Low reasoning effort. |

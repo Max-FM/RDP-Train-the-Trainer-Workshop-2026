@@ -46,7 +46,7 @@ Once I can assign models by job, I can make better use of the plans I already ha
 
 **Action:** Show the draft, both reviews, the coordinator’s decisions, MiniMax’s changes and the offline browser check (Edge). Briefly show Providers or Logs in OpenCodeX. If the run is still going, open the backup. Return to the deck by 4:45.
 
-Here’s that delegation pattern. MiniMax builds from a short brief. Claude checks the logic and Z.ai suggests visual improvements to that same draft. In the same Codex session, the coordinator decides which findings apply and sends those changes back to MiniMax. An offline browser check then verifies the revised app. In OpenCodeX, the logs show which route handled each request. If the run is still going, I’ll show the calculator from an earlier run.
+Here’s that delegation pattern. GPT-6.1 Sol coordinates this run and coordinated the earlier one, but the coordinator can be any model you choose. MiniMax builds from a short brief. Claude checks the logic and Z.ai suggests visual improvements to that same draft. In the same Codex session, the coordinator decides which findings apply and sends those changes back to MiniMax. An offline browser check then verifies the revised app. In OpenCodeX, the logs show which route handled each request. If the run is still going, I’ll show the calculator from an earlier run.
 
 - https://opencodex.me/guides/web-dashboard/
 - https://opencodex.me/guides/sub-agent-surface/

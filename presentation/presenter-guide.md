@@ -14,7 +14,7 @@
 ## Before the talk
 
 - Open the PowerPoint, a Codex chat rooted in the project or kit folder, the OpenCodeX dashboard, and the [labelled offline backup](../demo/backup/index.html).
-- Use the [prepared prompt](../prompts/demo-prompt.txt) from the same project folder you’ll use in the talk. Keep Codex and the foreground tool output visible. The project skill handles both stages and the coordinator’s decisions between them. To run without OpenAI usage, select Claude Opus in Codex and use the [Opus prompt](../prompts/demo-prompt-opus.txt). To inspect the plan without sending model requests, run `powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Preview`.
+- Use the [prepared prompt](../prompts/demo-prompt.txt) from the same project folder you’ll use in the talk. Keep Codex and the foreground tool output visible. The project skill handles both stages and the coordinator’s decisions between them. GPT-6.1 Sol coordinates the live demo and coordinated the backup run, but the coordinator can be any model. To run without OpenAI usage, select Claude Opus in Codex and use the [Opus prompt](../prompts/demo-prompt-opus.txt). To inspect the plan without sending model requests, run `powershell.exe -NoProfile -NonInteractive -File demo/runner/demo.ps1 -Mode Preview`.
 - Read the [backup notes](../demo/backup/README.md) beforehand. They explain how the backup was made.
 
 ## The demo (slide 5, about 100 seconds)
