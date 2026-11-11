@@ -6,8 +6,8 @@ A six-minute train-the-trainer session on using models from several providers an
 
 | Path | What it is |
 |---|---|
-| [presentation/model-routing.pptx](presentation/model-routing.pptx) | The deck: six timed slides (1–5 and 7, 5:30 total) and optional background on slide 6 |
-| [presentation/presenter-guide.md](presentation/presenter-guide.md) | Timing, setup, and the 50-second demo walkthrough |
+| [presentation/model-routing.pptx](presentation/model-routing.pptx) | The deck: seven timed slides (1–6 and 8, 6:00 total) and optional background on slide 7 |
+| [presentation/presenter-guide.md](presentation/presenter-guide.md) | Timing, setup, and the two-minute demo walkthrough |
 | [presentation/speaker-notes.md](presentation/speaker-notes.md) | The spoken script, with sources |
 | [prompts/](prompts) | Prompts to paste into Codex to start the live demo |
 | [demo/backup/](demo/backup) | A finished calculator from an earlier run, for use if the live demo stalls |
