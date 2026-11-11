@@ -33,7 +33,7 @@ Add `-NodeExecutable <path>` if `local-runtime.json` isn't set up.
 
 ## Stages
 
-**Prepare** checks Edge against the backup and confirms that OpenCodeX lists all three model IDs and image input for the Z.ai model. Only then does it clear the previous generated files. It asks MiniMax for a fresh draft. Claude reviews the source, Edge checks the draft and renders it at 1280px and 390px, and Z.ai reviews the same source together with both renderings. It ends by recording file hashes in `review-ready.json`. If either preflight fails, no model is called and earlier files stay in place.
+**Prepare** checks Edge against the backup and confirms that OpenCodex lists all three model IDs and image input for the Z.ai model. Only then does it clear the previous generated files. It asks MiniMax for a fresh draft. Claude reviews the source, Edge checks the draft and renders it at 1280px and 390px, and Z.ai reviews the same source together with both renderings. It ends by recording file hashes in `review-ready.json`. If either preflight fails, no model is called and earlier files stay in place.
 
 **Coordinator decision.** The coordinator reads the draft, both reviews, and `draft-check.json`, then writes `coordination.json`:
 
@@ -59,7 +59,7 @@ The runner requires at least one decision for each reviewer, and an applied `bro
 | Correctness review | `anthropic/claude-sonnet-5-5` | high | 64,000 |
 | Visual design review | `zai/glm-5.3` | high | 64,000 |
 
-Reasoning tokens count against the output cap, so the high-effort reviewers get more room. Each request times out after 210 seconds. OpenCodeX's own provider timeout is 200 seconds, so a slow request fails with the proxy's error first.
+Reasoning tokens count against the output cap, so the high-effort reviewers get more room. Each request times out after 210 seconds. OpenCodex's own provider timeout is 200 seconds, so a slow request fails with the proxy's error first.
 
 ## Run files
 
@@ -86,7 +86,7 @@ All files are written to `demo/live/`, which is ignored by Git.
 | `Proxy catalog does not list image input for ...` | The Z.ai route can't take images, so the visual review would run blind. No model was called. |
 | `Rendering the draft in Edge failed` | Edge couldn't render the draft. The Z.ai review is skipped and Prepare stops. Use the backup. |
 | `Backup/browser preflight failed` | Edge or the bundled Playwright isn't available. No model was called. |
-| `Proxy catalog is missing ...` | OpenCodeX isn't running or lacks a route. No model was called. |
+| `Proxy catalog is missing ...` | OpenCodex isn't running or lacks a route. No model was called. |
 | `A newer Prepare attempt superseded this run` | Revise was given an old run ID. Start a new run. |
 | `This run already attempted its revision stage` | Each run revises once. Start a new run. |
 | `A job is already active or its lock needs inspection` | `demo/live/.runner.lock` exists. Remove it only after confirming no runner process is active. |

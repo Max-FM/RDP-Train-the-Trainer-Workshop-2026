@@ -5,7 +5,7 @@ The demo shows one Codex session coordinating three models from three providers.
 ```mermaid
 flowchart LR
     C[Codex coordinator] -->|runs| R[Demo runner<br/>demo/runner]
-    R -->|/v1/responses| P[OpenCodeX proxy<br/>127.0.0.1:10100]
+    R -->|/v1/responses| P[OpenCodex proxy<br/>127.0.0.1:10100]
     P --> M[MiniMax M3<br/>build and revise]
     P --> S[Claude Sonnet 5.5<br/>correctness review]
     P --> Z[Z.ai GLM 5.3<br/>visual design review<br/>source and renderings]
@@ -18,8 +18,8 @@ flowchart LR
 
 | Component | Role |
 |---|---|
-| Codex coordinator | The model running the Codex session. It starts each runner stage, reads the draft and reviews, and decides which findings to apply. The live demo and the backup run used GPT-6.1 Sol, but it can be any model that Codex can select, such as Claude Opus through OpenCodeX. |
-| OpenCodeX | A local proxy that receives OpenAI-style requests and forwards each one to the provider for the requested model ID, using that provider's subscription or API key. |
+| Codex coordinator | The model running the Codex session. It starts each runner stage, reads the draft and reviews, and decides which findings to apply. The live demo and the backup run used GPT-6.1 Sol, but it can be any model that Codex can select, such as Claude Opus through OpenCodex. |
+| OpenCodex | A local proxy that receives OpenAI-style requests and forwards each one to the provider for the requested model ID, using that provider's subscription or API key. |
 | Demo runner | `demo/runner/run.mjs`, started through `demo.ps1`. It sends the model requests, validates replies, runs the browser checks, and writes all run files. |
 | MiniMax M3 | Builds the calculator from a short brief, then implements the coordinator's accepted changes. Low reasoning effort. |
 | Claude Sonnet 5.5 | Reviews the draft's logic, validation, and rounding. High reasoning effort. |

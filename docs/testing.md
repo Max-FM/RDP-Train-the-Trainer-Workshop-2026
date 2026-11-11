@@ -20,4 +20,4 @@ It prints `PASS` and the temporary folder it used. A run takes about 30 to 60 se
 - A bad JSON reply and a failed final check each get exactly one repair, and a failed repair keeps the app unpublished.
 - A missing browser stops Prepare before any model request, and an older run can't be revised afterward.
 
-The test uses fake providers, so passing it doesn't prove the live routes work. Before a session, do a full live rehearsal with OpenCodeX running.
+The test uses fake providers, so passing it doesn't prove the live routes work. Before a session, do a full live rehearsal with OpenCodex running.

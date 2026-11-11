@@ -1,12 +1,12 @@
 # Model routing in Codex
 
-A six-minute train-the-trainer session on using models from several providers and subscriptions in one Codex workflow, with a live demo. Codex coordinates the work, OpenCodeX routes each request to the right provider, and three outside models build and review a small fictional app while the audience watches.
+A six-minute train-the-trainer session on using models from several providers and subscriptions in one Codex workflow, with a live demo. Codex coordinates the work, OpenCodex routes each request to the right provider, and three outside models build and review a small fictional app while the audience watches.
 
 ## What's here
 
 | Path | What it is |
 |---|---|
-| [presentation/model-routing.pptx](presentation/model-routing.pptx) | The deck: six timed slides (5:30) and an untimed appendix |
+| [presentation/model-routing.pptx](presentation/model-routing.pptx) | The deck: six timed slides (1–5 and 7, 5:30 total) and optional background on slide 6 |
 | [presentation/presenter-guide.md](presentation/presenter-guide.md) | Timing, setup, and the 50-second demo walkthrough |
 | [presentation/speaker-notes.md](presentation/speaker-notes.md) | The spoken script, with sources |
 | [prompts/](prompts) | Prompts to paste into Codex to start the live demo |
@@ -16,7 +16,7 @@ A six-minute train-the-trainer session on using models from several providers an
 
 ## Run the live demo
 
-Open this folder in Codex with OpenCodeX running locally, then paste one of the prompts:
+Open this folder in Codex with OpenCodex running locally, then paste one of the prompts:
 
 - [prompts/demo-prompt.txt](prompts/demo-prompt.txt) runs the demo with the session's current model as coordinator.
 - [prompts/demo-prompt-opus.txt](prompts/demo-prompt-opus.txt) runs it with Claude Opus 5.5 as coordinator and no OpenAI usage. Select `anthropic-apikey/claude-opus-5-5` in the Codex model picker before pasting.
@@ -26,7 +26,7 @@ You can also ask Codex to run `$workshop-live-demo`. A full run takes a few minu
 ## Requirements
 
 - The Codex desktop app on Windows. The demo uses the Node.js and Playwright runtime bundled with Codex, so no separate Node.js or npm install is needed.
-- [OpenCodeX](https://opencodex.me) running at `http://127.0.0.1:10100` with MiniMax, Anthropic, and Z.ai routes configured.
+- [OpenCodex](https://opencodex.me) running at `http://127.0.0.1:10100` with MiniMax, Anthropic, and Z.ai routes configured.
 - Microsoft Edge, for the offline browser checks.
 
 To check the setup without calling any model:
